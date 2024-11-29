@@ -3,7 +3,15 @@ uuid = "fb531da0-582c-4a62-80cc-836e12ba9c31"
 authors = ["Arno Strouwen"]
 version = "0.0.1-DEV"
 
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+MixedModels = "ff71e718-51f3-5ec2-a782-8ffcbfa3c316"
+
 [compat]
+CSV = "0.10.15"
+DataFrames = "1.7.0"
+MixedModels = "4.27.0"
 julia = "1.10"
 
 [extras]

@@ -22,6 +22,8 @@ one_minus_one_coding!(df[!,:SS])
 fm = @formula(LEI~ 1 + (1|Day) + FR + MC + SS + FR&MC + FR&SS + MC&SS + FR&FR + MC&MC + SS&SS)
 m = fit(MixedModel, fm, df; REML = true)
 
+β = m.β
+y = m.y
 σsq_eps = m.sigma^2
 σsq_gam = m.sigmas[1][1]^2
 Z = m.reterms[1]'
@@ -30,17 +32,23 @@ X = m.X
 varcovar = inv(X'*inv(V(σsq_eps,σsq_gam))*X)
 m.vcov
 
-dVinv_dσ = [ForwardDiff.derivative(σsq_eps->inv(V(σsq_eps,σsq_gam)),σsq_eps),
+function modified_profile_likelihood(σsq)
+    σsq_gam, σsq_eps = σsq
+    Vinv = inv(V(σsq_gam, σsq_eps))
+    -1/2*logdet(V(σsq_gam,σsq_eps)) - 1/2*logdet(X'*Vinv*X) - 1/2*(y - X*β)'*Vinv*(y - X*β)
+end
+FIM_obs = - ForwardDiff.hessian(modified_profile_likelihood, [σsq_eps,σsq_gam])
+W = inv(FIM_obs)
+
+dVinv_dσsq = [ForwardDiff.derivative(σsq_eps->inv(V(σsq_eps,σsq_gam)),σsq_eps),
             ForwardDiff.derivative(σsq_gam->inv(V(σsq_eps,σsq_gam)),σsq_gam)]
 
-W = [0.1169879811 -0.027399087; -0.027399087 0.3637156079] # wald style var-co-var for estimate of variance components. Not yet reproduced in MixedModels.jl
-
-P = [X'*dVinv_dσ[i]*X for i in eachindex(dVinv_dσ)]
-Q = [X'*dVinv_dσ[i]*V(σsq_eps,σsq_gam)*dVinv_dσ[j]*X for i in eachindex(dVinv_dσ), j in eachindex(dVinv_dσ)]
+P = [X'*dVinv_dσsq[i]*X for i in eachindex(dVinv_dσsq)]
+Q = [X'*dVinv_dσsq[i]*V(σsq_eps,σsq_gam)*dVinv_dσsq[j]*X for i in eachindex(dVinv_dσsq), j in eachindex(dVinv_dσsq)]
 
 factor = zeros(size(varcovar)...)
-for i in eachindex(dVinv_dσ)
-    for j in eachindex(dVinv_dσ)
+for i in eachindex(dVinv_dσsq)
+    for j in eachindex(dVinv_dσsq)
         Pi = P[i]
         Pj = P[j]
         Qij = Q[i,j]
@@ -58,8 +66,8 @@ C = zeros(p,c)
 C[10,1] = 1
 M = C*inv(C'*varcovar*C)*C'
 A1 = 0.0
-for i in eachindex(dVinv_dσ)
-    for j in eachindex(dVinv_dσ)
+for i in eachindex(dVinv_dσsq)
+    for j in eachindex(dVinv_dσsq)
         Pi = P[i]
         Pj = P[j]
         Wij = W[i,j]
@@ -68,8 +76,8 @@ for i in eachindex(dVinv_dσ)
 end
 
 A2 = 0.0
-for i in eachindex(dVinv_dσ)
-    for j in eachindex(dVinv_dσ)
+for i in eachindex(dVinv_dσsq)
+    for j in eachindex(dVinv_dσsq)
         Pi = P[i]
         Pj = P[j]
         Wij = W[i,j]

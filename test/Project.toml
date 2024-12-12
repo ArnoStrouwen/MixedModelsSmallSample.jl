@@ -1,9 +1,7 @@
-name = "KenwardRoger"
-uuid = "fb531da0-582c-4a62-80cc-836e12ba9c31"
-authors = ["Arno Strouwen", "José Núñez Ares"]
-version = "0.0.1-DEV"
-
 [deps]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"

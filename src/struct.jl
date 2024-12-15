@@ -1,7 +1,3 @@
-using MixedModels
-using ForwardDiff
-using JSON3
-
 @kwdef struct KenwardRogerMatrices
     fit::MixedModel
     σ2s::Vector{Float64}

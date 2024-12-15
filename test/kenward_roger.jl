@@ -4,7 +4,6 @@ using MixedModels
 using LinearAlgebra
 using ForwardDiff
 using Distributions
-using JSON3
 using Test
 
 using KenwardRoger

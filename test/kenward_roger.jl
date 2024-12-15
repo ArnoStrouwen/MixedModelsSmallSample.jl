@@ -44,12 +44,18 @@ include("fixture_estimates.jl")
     kr = kenwardroger_matrices(m)
     estimates = kenwardroger_estimates(m, kr)
 
-    for (i,e) in enumerate(estimates)
-        d_expected = Dict(fieldnames(FixedEffect) .=> getfield.(Ref(expected_estimates[i]), fieldnames(FixedEffect)))
-        d_obtained = Dict(fieldnames(FixedEffect) .=> getfield.(Ref(estimates[i]), fieldnames(FixedEffect)))
+    for (i, e) in enumerate(estimates)
+        d_expected = Dict(
+            fieldnames(FixedEffect) .=>
+                getfield.(Ref(expected_estimates[i]), fieldnames(FixedEffect)),
+        )
+        d_obtained = Dict(
+            fieldnames(FixedEffect) .=>
+                getfield.(Ref(estimates[i]), fieldnames(FixedEffect)),
+        )
         for (key, value) in d_obtained
             if value isa Number
-                @test isapprox(value, d_expected[key], atol=1e-2)
+                @test isapprox(value, d_expected[key], atol = 1e-2)
             end
         end
     end

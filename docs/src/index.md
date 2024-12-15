@@ -12,5 +12,3 @@ Documentation for [KenwardRoger](https://github.com/ArnoStrouwen/KenwardRoger.jl
 ```@autodocs
 Modules = [KenwardRoger]
 ```
-
-SER

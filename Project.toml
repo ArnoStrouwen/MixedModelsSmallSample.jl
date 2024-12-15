@@ -18,6 +18,7 @@ ForwardDiff = "0.10.38"
 JET = "0.9"
 LinearAlgebra = "1.10.0"
 MixedModels = "4.27.0"
+SafeTestsets = "0.1.0"
 Test = "1.10"
 julia = "1.10"
 
@@ -26,7 +27,8 @@ Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "CSV", "DataFrames", "JET", "Test"]
+test = ["Aqua", "CSV", "DataFrames", "JET", "SafeTestsets", "Test"]

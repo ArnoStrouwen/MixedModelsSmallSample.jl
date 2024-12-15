@@ -1,16 +1,18 @@
-using KenwardRoger
 using Test
-using Aqua
-using JET
+using SafeTestsets
 
 @testset "KenwardRoger.jl" begin
-    @testset "Code quality (Aqua.jl)" begin
+    @safetestset "Code quality (Aqua.jl)" begin
+        using Aqua
+        using KenwardRoger
         Aqua.test_all(KenwardRoger)
     end
-    @testset "Code linting (JET.jl)" begin
+    @safetestset "Code linting (JET.jl)" begin
+        using JET
+        using KenwardRoger
         JET.test_package(KenwardRoger; target_defined_modules = true)
     end
-    @testset "Scientific tests" begin
+    @safetestset "Scientific tests" begin
         include("kenward_roger.jl")
     end
 end

@@ -10,7 +10,7 @@ using SafeTestsets
     @safetestset "Code linting (JET.jl)" begin
         using JET
         using KenwardRoger
-        JET.test_package(KenwardRoger; target_defined_modules = true)
+        JET.test_package(KenwardRoger; target_defined_modules=true)
     end
     @safetestset "Scientific tests" begin
         include("kenward_roger.jl")

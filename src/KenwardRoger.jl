@@ -13,15 +13,15 @@ function kenwardroger_matrices(m::MixedModel)
     β = m.β
     y = m.y
     X = m.X
-    σ2sq_gam = [m.sigmas[i][1][1]^2 for i = 1:length(m.sigmas)]
+    σ2sq_gam = [m.sigmas[i][1][1]^2 for i in 1:length(m.sigmas)]
     σ2s = [m.sigma^2, σ2sq_gam...]
     Zs = [I(nobs(m)), m.reterms...]
     ZZs = [Z * Z' for Z in Zs]
     V(σ2s) = sum([σ2s[i] * ZZs[i] for i in eachindex(σ2s)])
     function modified_profile_likelihood(σ2s)
         Vinv = inv(V(σ2s))
-        -1 / 2 * logdet(V(σ2s)) - 1 / 2 * logdet(X' * Vinv * X) -
-        1 / 2 * (y - X * β)' * Vinv * (y - X * β)
+        return -1 / 2 * logdet(V(σ2s)) - 1 / 2 * logdet(X' * Vinv * X) -
+               1 / 2 * (y - X * β)' * Vinv * (y - X * β)
     end
 
     FIM_obs = -ForwardDiff.hessian(modified_profile_likelihood, σ2s)
@@ -41,12 +41,12 @@ function kenwardroger_matrices(m::MixedModel)
         end
     end
     varcovar_adjusted = m.vcov + 2 * m.vcov * factor * m.vcov
-    adjusted_error = sqrt.([varcovar_adjusted[i, i] for i = 1:size(m.vcov, 1)])
+    adjusted_error = sqrt.([varcovar_adjusted[i, i] for i in 1:size(m.vcov, 1)])
 
-    KenwardRogerMatrices(m, σ2s, V(σ2s), W, P, Q, m.vcov, varcovar_adjusted, adjusted_error)
+    return KenwardRogerMatrices(
+        m, σ2s, V(σ2s), W, P, Q, m.vcov, varcovar_adjusted, adjusted_error
+    )
 end
-
-
 
 function kenwardroger_estimates(m::MixedModel, kr::KenwardRogerMatrices)
     fixed_effects = Vector{FixedEffect}()
@@ -83,14 +83,12 @@ function kenwardroger_estimates(m::MixedModel, kr::KenwardRogerMatrices)
         v = 4 + (c + 2) / (c * ρ - 1)
         λ = v / (Estar * (v - 2))
 
-
         t = TDist(v)
         tstar = m.beta[ic] / kr.StdBetas[ic]
         p_value = 2 * ccdf(t, abs(tstar))
         α = 0.05
         t_α = quantile(t, 1 - α / 2)
         δ = t_α * kr.StdBetas[ic]
-
 
         push!(
             fixed_effects,
@@ -107,7 +105,7 @@ function kenwardroger_estimates(m::MixedModel, kr::KenwardRogerMatrices)
             ),
         )
     end
-    fixed_effects
+    return fixed_effects
 end
 
 end

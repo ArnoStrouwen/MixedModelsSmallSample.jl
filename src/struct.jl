@@ -10,7 +10,6 @@
     StdBetas::Array{Float64,1}
 end
 
-
 @kwdef struct CovMatrixVarComponents
     ids::Vector{String}
     values::Vector{String}

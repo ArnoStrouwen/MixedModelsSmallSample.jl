@@ -39,7 +39,7 @@ include("fixture_estimates.jl")
             MC & MC +
             SS & SS
     )
-    m = fit(MixedModel, fm, df; REML = true)
+    m = fit(MixedModel, fm, df; REML=true)
 
     kr = kenwardroger_matrices(m)
     estimates = kenwardroger_estimates(m, kr)
@@ -55,9 +55,8 @@ include("fixture_estimates.jl")
         )
         for (key, value) in d_obtained
             if value isa Number
-                @test isapprox(value, d_expected[key], atol = 1e-2)
+                @test isapprox(value, d_expected[key], atol=1e-2)
             end
         end
     end
-
 end

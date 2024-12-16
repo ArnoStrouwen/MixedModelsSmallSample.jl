@@ -15,4 +15,7 @@ using SafeTestsets
     @safetestset "Scientific tests" begin
         include("kenward_roger.jl")
     end
+    @safetestset "split plot experiment" begin
+        include("split plot experiment.jl")
+    end
 end

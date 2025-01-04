@@ -8,7 +8,7 @@ using Test
 
 using KenwardRoger
 
-df = DataFrame(CSV.File("Data Wind tunnel Chapter 10.csv"))
+df = DataFrame(CSV.File("Data wind tunnel Chapter 10.csv"))
 rename!(df, "Whole Plots" => :WP)
 
 fm = @formula(

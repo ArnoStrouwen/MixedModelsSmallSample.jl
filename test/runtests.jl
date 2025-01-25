@@ -12,8 +12,8 @@ using SafeTestsets
         using KenwardRoger
         JET.test_package(KenwardRoger; target_defined_modules=true)
     end
-    @safetestset "Scientific tests" begin
-        include("kenward_roger.jl")
+    @safetestset "blocked experiment" begin
+        include("blocked experiment.jl")
     end
     @safetestset "split plot experiment" begin
         include("split plot experiment.jl")

@@ -39,3 +39,22 @@ res = DataFrame(CSV.File("Results wind tunnel.csv"))
 @test isapprox(res[!, "Estimate"], getfield.(estimates, :estimate), atol=1e-9, rtol=1e-9)
 @test isapprox(res[!, "Std Error"], getfield.(estimates, :std_error), atol=1e-6, rtol=1e-6)
 @test isapprox(res[!, "DFDen"], getfield.(estimates, :den_df), atol=1e-2, rtol=1e-2)
+
+kr = kenwardroger_matrices(m, :expected)
+estimates = kenwardroger_estimates(m, kr)
+
+res = DataFrame(CSV.File("Results wind tunnel lmertest.csv"))
+res = vcat(res, res[6:9, :])
+deleteat!(res, 6:9)
+@test isapprox(
+    res[!, "coefficients.Estimate"], getfield.(estimates, :estimate), atol=1e-10, rtol=1e-10
+)
+@test isapprox(
+    res[!, "coefficients.Std..Error"],
+    getfield.(estimates, :std_error),
+    atol=1e-6,
+    rtol=1e-10,
+)
+@test isapprox(
+    res[!, "coefficients.df"], getfield.(estimates, :den_df), atol=1e-9, rtol=1e-9
+)

@@ -9,10 +9,12 @@ include("struct.jl")
 
 export kenwardroger_matrices, kenwardroger_estimates
 
-function kenwardroger_matrices(m::MixedModel)
+function kenwardroger_matrices(m::MixedModel, FIM_σ=:observed)
     β = m.β
     y = m.y
     X = m.X
+    n = length(y)
+    Φ = m.vcov
     σ2sq_gam = [m.sigmas[i][1][1]^2 for i in 1:length(m.sigmas)]
     σ2s = [m.sigma^2, σ2sq_gam...]
     Zs = [I(nobs(m)), m.reterms...]
@@ -23,16 +25,24 @@ function kenwardroger_matrices(m::MixedModel)
         return -1 / 2 * logdet(V(σ2s)) - 1 / 2 * logdet(X' * Vinv * X) -
                1 / 2 * (y - X * β)' * Vinv * (y - X * β)
     end
-
-    FIM_obs = -ForwardDiff.hessian(modified_profile_likelihood, σ2s)
-    W = inv(FIM_obs)
-
     Vinv = inv(V(σ2s))
     P = [-X' * Vinv * ZZs[i] * Vinv * X for i in eachindex(ZZs)]
     Q = [
         X' * Vinv * ZZs[i] * Vinv * ZZs[j] * Vinv * X for i in eachindex(ZZs),
         j in eachindex(ZZs)
     ]
+
+    if FIM_σ == :observed
+        FIM = -ForwardDiff.hessian(modified_profile_likelihood, σ2s)
+    elseif FIM_σ == :expected
+        FIM = [
+            1 / 2 * tr(Vinv * ZZs[i] * Vinv * ZZs[j]) - tr(Φ * Q[i, j]) +
+            1 / 2 * tr(Φ * P[i] * Φ * P[j]) for i in eachindex(σ2s), j in eachindex(σ2s)
+        ]
+    else
+        error("FIM_σ needs to equal :observed or :expected")
+    end
+    W = inv(FIM)
 
     factor = zeros(size(m.vcov)...)
     for i in eachindex(ZZs)
@@ -42,7 +52,6 @@ function kenwardroger_matrices(m::MixedModel)
     end
     varcovar_adjusted = m.vcov + 2 * m.vcov * factor * m.vcov
     adjusted_error = sqrt.([varcovar_adjusted[i, i] for i in 1:size(m.vcov, 1)])
-
     return KenwardRogerMatrices(
         m, σ2s, V(σ2s), W, P, Q, m.vcov, varcovar_adjusted, adjusted_error
     )

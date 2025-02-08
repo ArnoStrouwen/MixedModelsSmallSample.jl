@@ -1,9 +1,6 @@
 using CSV
 using DataFrames
 using MixedModels
-using LinearAlgebra
-using ForwardDiff
-using Distributions
 using Test
 
 using KenwardRoger

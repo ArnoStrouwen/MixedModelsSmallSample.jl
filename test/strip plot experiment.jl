@@ -38,7 +38,7 @@ res = DataFrame(CSV.File("Results battery cell.csv"))
 )
 @test_broken isapprox(res[!, "DFDen"], getfield.(estimates, :den_df), atol=1e-5, rtol=1e-5)
 
-kr = kenwardroger_matrices(m, :expected)
+kr = kenwardroger_matrices(m; FIM_σ²=:expected)
 estimates = kenwardroger_estimates(m, kr)
 
 res = DataFrame(CSV.File("Results battery cell lmertest.csv"))

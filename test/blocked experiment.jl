@@ -42,7 +42,7 @@ res = DataFrame(CSV.File("Results pastry dough.csv"))
 @test isapprox(res[!, "Std Error"], getfield.(estimates, :std_error), atol=1e-5, rtol=1e-6)
 @test isapprox(res[!, "DFDen"], getfield.(estimates, :den_df), atol=1e-2, rtol=1e-4)
 
-kr = kenwardroger_matrices(m, :expected)
+kr = kenwardroger_matrices(m; FIM_σ²=:expected)
 estimates = kenwardroger_estimates(m, kr)
 res = DataFrame(CSV.File("Results pastry dough lmertest.csv"))
 res = vcat(res, res[5:7, :])

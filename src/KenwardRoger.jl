@@ -9,7 +9,7 @@ include("struct.jl")
 
 export kenwardroger_matrices, kenwardroger_estimates
 
-function kenwardroger_matrices(m::MixedModel, FIM_σ=:observed)
+function kenwardroger_matrices(m::MixedModel; FIM_σ²=:observed)
     β = m.β
     y = m.y
     X = m.X
@@ -38,17 +38,17 @@ function kenwardroger_matrices(m::MixedModel, FIM_σ=:observed)
         j in eachindex(ZZs)
     ]
 
-    if FIM_σ == :observed
-        FIM = -ForwardDiff.hessian(modified_profile_likelihood, σ2s)
-    elseif FIM_σ == :expected
-        FIM = [
+    if FIM_σ² == :observed
+        FIM_σ² = -ForwardDiff.hessian(modified_profile_likelihood, σ2s)
+    elseif FIM_σ² == :expected
+        FIM_σ² = [
             1 / 2 * tr(Vinv * ZZs[i] * Vinv * ZZs[j]) - tr(Φ * Q[i, j]) +
             1 / 2 * tr(Φ * P[i] * Φ * P[j]) for i in eachindex(σ2s), j in eachindex(σ2s)
         ]
     else
-        error("FIM_σ needs to equal :observed or :expected")
+        error("FIM_σ² needs to equal :observed or :expected")
     end
-    W = inv(FIM)
+    W = inv(FIM_σ²)
 
     factor = zeros(size(m.vcov)...)
     for i in eachindex(ZZs)

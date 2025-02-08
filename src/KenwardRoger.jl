@@ -5,9 +5,12 @@ using MixedModels
 using Distributions
 using LinearAlgebra
 
+using StatsAPI: StatsAPI, coeftable
+using StatsBase: StatsBase, CoefTable
+
 include("struct.jl")
 
-export kenwardroger_matrices, kenwardroger_estimates
+export kenwardroger_matrices #, kenwardroger_estimates
 
 function kenwardroger_matrices(m::MixedModel, FIM_σ=:observed)
     β = m.β
@@ -57,9 +60,18 @@ function kenwardroger_matrices(m::MixedModel, FIM_σ=:observed)
     )
 end
 
-function kenwardroger_estimates(m::MixedModel, kr::KenwardRogerMatrices)
-    fixed_effects = Vector{FixedEffect}()
+
+function StatsAPI.coeftable(m::MixedModel, kr::KenwardRogerMatrices)
     varcovar = kr.CovVar
+    β = Vector{Float64}()
+    σ = Vector{Float64}()
+    lb_ci_alpha05 = Vector{Float64}()
+    ub_ci_alpha05 = Vector{Float64}()
+    num_df = Vector{Float64}()
+    den_df = Vector{Float64}()
+    t_statistic = Vector{Float64}()
+    p_values = Vector{Float64}()
+
     for (ic, coef) in enumerate(coefnames(m))
         c = 1
         p = length(coefnames(m))
@@ -99,22 +111,23 @@ function kenwardroger_estimates(m::MixedModel, kr::KenwardRogerMatrices)
         t_α = quantile(t, 1 - α / 2)
         δ = t_α * kr.StdBetas[ic]
 
-        push!(
-            fixed_effects,
-            FixedEffect(
-                coef,
-                m.β[ic],
-                kr.StdBetas[ic],
-                m.β[ic] - δ,
-                m.β[ic] + δ,
-                λ,
-                v,
-                tstar,
-                p_value,
-            ),
-        )
+        push!(β, m.β[ic])
+        push!(σ, kr.StdBetas[ic])
+        push!(lb_ci_alpha05, m.β[ic] - δ)
+        push!(ub_ci_alpha05, m.β[ic] + δ)
+        push!(num_df, λ)
+        push!(den_df, v)
+        push!(t_statistic, tstar)
+        push!(p_values, p_value)
+
     end
-    return fixed_effects
+    CoefTable(
+        hcat(β, σ, lb_ci_alpha05, ub_ci_alpha05, num_df, den_df, t_statistic, p_values),
+        ["Coef.", "Std. Error", "LB coef.", "UB coef.", "NumDF", "Denominator degrees of freedom", "t", "Pr(>|t|)"],
+        coefnames(m),
+        8, # pvalcol
+        7, # teststatcol
+    )
 end
 
 end

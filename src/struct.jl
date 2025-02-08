@@ -15,18 +15,6 @@ end
     values::Vector{String}
 end
 
-@kwdef struct FixedEffect
-    id::String
-    estimate::Float64
-    std_error::Float64
-    lb_ci_alpha05::Float64
-    ub_ci_alpha05::Float64
-    num_df::Float64
-    den_df::Float64
-    t_statistic::Float64
-    p_value::Float64
-end
-
 @kwdef struct FixedEffectsCovariance
     cov_matrix::Vector{Vector{Float64}}
     ids::Vector{String}

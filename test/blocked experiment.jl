@@ -1,9 +1,6 @@
 using CSV
 using DataFrames
 using MixedModels
-using LinearAlgebra
-using ForwardDiff
-using Distributions
 using Test
 
 using KenwardRoger
@@ -46,7 +43,7 @@ res = DataFrame(CSV.File("Results pastry dough.csv"))
 @test isapprox(res[!, "Std Error"], estimates.cols[2], atol=1e-5, rtol=1e-6)
 @test isapprox(res[!, "DFDen"], estimates.cols[6], atol=1e-2, rtol=1e-4)
 
-kr = kenwardroger_matrices(m, :expected)
+kr = kenwardroger_matrices(m; FIM_σ²=:expected)
 
 estimates = coeftable(m, kr)
 res = DataFrame(CSV.File("Results pastry dough lmertest.csv"))

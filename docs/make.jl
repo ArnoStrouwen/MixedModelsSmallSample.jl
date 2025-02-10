@@ -15,4 +15,6 @@ makedocs(;
     pages=["Home" => "index.md"],
 )
 
-deploydocs(; repo="github.com/ArnoStrouwen/KenwardRoger.jl", devbranch="master")
+deploydocs(;
+    repo="github.com/ArnoStrouwen/KenwardRoger.jl", devbranch="master", push_preview=true
+)

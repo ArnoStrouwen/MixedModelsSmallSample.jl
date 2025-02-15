@@ -42,10 +42,4 @@ jobs:
           using Documenter: DocMeta, doctest
           using KenwardRoger
           DocMeta.setdocmeta!(KenwardRoger, :DocTestSetup, :(using KenwardRoger); recursive=true)
-          doctest(KenwardRoger)          
-      - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v3
-        if: github.event_name == 'pull_request'
-        with:
-          message: |
-            Preview should be available on https://arnostrouwen.github.io/KenwardRoger.jl/previews/PR${{ github.event.pull_request.number }}/
+          doctest(KenwardRoger)

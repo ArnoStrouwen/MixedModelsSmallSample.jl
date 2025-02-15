@@ -35,27 +35,20 @@ fm = @formula(
 )
 m = fit(MixedModel, fm, df; REML=true)
 kr = kenwardroger_matrices(m)
-estimates = kenwardroger_estimates(m, kr)
+
+estimates = coeftable(m, kr)
 
 res = DataFrame(CSV.File("Results pastry dough.csv"))
-@test isapprox(res[!, "Estimate"], getfield.(estimates, :estimate), atol=1e-9, rtol=1e-9)
-@test isapprox(res[!, "Std Error"], getfield.(estimates, :std_error), atol=1e-5, rtol=1e-6)
-@test isapprox(res[!, "DFDen"], getfield.(estimates, :den_df), atol=1e-2, rtol=1e-4)
+@test isapprox(res[!, "Estimate"], estimates.cols[1], atol=1e-9, rtol=1e-9)
+@test isapprox(res[!, "Std Error"], estimates.cols[2], atol=1e-5, rtol=1e-6)
+@test isapprox(res[!, "DFDen"], estimates.cols[6], atol=1e-2, rtol=1e-4)
 
 kr = kenwardroger_matrices(m; FIM_σ²=:expected)
-estimates = kenwardroger_estimates(m, kr)
+
+estimates = coeftable(m, kr)
 res = DataFrame(CSV.File("Results pastry dough lmertest.csv"))
 res = vcat(res, res[5:7, :])
 deleteat!(res, 5:7)
-@test isapprox(
-    res[!, "coefficients.Estimate"], getfield.(estimates, :estimate), atol=1e-8, rtol=1e-8
-)
-@test isapprox(
-    res[!, "coefficients.Std..Error"],
-    getfield.(estimates, :std_error),
-    atol=1e-6,
-    rtol=1e-7,
-)
-@test isapprox(
-    res[!, "coefficients.df"], getfield.(estimates, :den_df), atol=1e-7, rtol=1e-7
-)
+@test isapprox(res[!, "coefficients.Estimate"], estimates.cols[1], atol=1e-8, rtol=1e-8)
+@test isapprox(res[!, "coefficients.Std..Error"], estimates.cols[2], atol=1e-6, rtol=1e-7)
+@test isapprox(res[!, "coefficients.df"], estimates.cols[6], atol=1e-7, rtol=1e-7)

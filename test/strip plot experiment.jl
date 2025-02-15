@@ -29,28 +29,17 @@ fm = @formula(
 m = fit(MixedModel, fm, df; REML=true)
 
 kr = kenwardroger_matrices(m)
-estimates = kenwardroger_estimates(m, kr)
+estimates = coeftable(m, kr)
 
 res = DataFrame(CSV.File("Results battery cell.csv"))
-@test isapprox(res[!, "Estimate"], getfield.(estimates, :estimate), atol=1e-7, rtol=1e-7)
-@test_broken isapprox(
-    res[!, "Std Error"], getfield.(estimates, :std_error), atol=1e-5, rtol=1e-5
-)
-@test_broken isapprox(res[!, "DFDen"], getfield.(estimates, :den_df), atol=1e-5, rtol=1e-5)
+@test isapprox(res[!, "Estimate"], estimates.cols[1], atol=1e-7, rtol=1e-7)
+@test_broken isapprox(res[!, "Std Error"], estimates.cols[2], atol=1e-5, rtol=1e-5)
+@test_broken isapprox(res[!, "DFDen"], estimates.cols[6], atol=1e-5, rtol=1e-5)
 
 kr = kenwardroger_matrices(m; FIM_σ²=:expected)
-estimates = kenwardroger_estimates(m, kr)
+estimates = coeftable(m, kr)
 
 res = DataFrame(CSV.File("Results battery cell lmertest.csv"))
-@test isapprox(
-    res[!, "coefficients.Estimate"], getfield.(estimates, :estimate), atol=1e-10, rtol=1e-7
-)
-@test isapprox(
-    res[!, "coefficients.Std..Error"],
-    getfield.(estimates, :std_error),
-    atol=1e-5,
-    rtol=1e-10,
-)
-@test isapprox(
-    res[!, "coefficients.df"], getfield.(estimates, :den_df), atol=1e-10, rtol=1e-6
-)
+@test isapprox(res[!, "coefficients.Estimate"], estimates.cols[1], atol=1e-10, rtol=1e-7)
+@test isapprox(res[!, "coefficients.Std..Error"], estimates.cols[2], atol=1e-5, rtol=1e-10)
+@test isapprox(res[!, "coefficients.df"], estimates.cols[6], atol=1e-10, rtol=1e-6)

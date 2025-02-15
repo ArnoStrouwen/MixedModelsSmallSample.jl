@@ -66,7 +66,6 @@ function kenwardroger_matrices(m::MixedModel; FIM_σ²=:observed)
     )
 end
 
-
 function StatsAPI.coeftable(m::MixedModel, kr::KenwardRogerMatrices)
     varcovar = kr.CovVar
     β = Vector{Float64}()
@@ -125,11 +124,19 @@ function StatsAPI.coeftable(m::MixedModel, kr::KenwardRogerMatrices)
         push!(den_df, v)
         push!(t_statistic, tstar)
         push!(p_values, p_value)
-
     end
-    CoefTable(
+    return CoefTable(
         hcat(β, σ, lb_ci_alpha05, ub_ci_alpha05, num_df, den_df, t_statistic, p_values),
-        ["Coef.", "Std. Error", "LB coef.", "UB coef.", "NumDF", "Denominator degrees of freedom", "t", "Pr(>|t|)"],
+        [
+            "Coef.",
+            "Std. Error",
+            "LB coef.",
+            "UB coef.",
+            "NumDF",
+            "Denominator degrees of freedom",
+            "t",
+            "Pr(>|t|)",
+        ],
         coefnames(m),
         8, # pvalcol
         7, # teststatcol

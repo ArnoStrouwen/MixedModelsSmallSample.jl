@@ -33,24 +33,13 @@ estimates = coeftable(m, kr)
 
 res = DataFrame(CSV.File("Results battery cell.csv"))
 @test isapprox(res[!, "Estimate"], estimates.cols[1], atol=1e-7, rtol=1e-7)
-@test_broken isapprox(
-    res[!, "Std Error"], estimates.cols[2], atol=1e-5, rtol=1e-5
-)
+@test_broken isapprox(res[!, "Std Error"], estimates.cols[2], atol=1e-5, rtol=1e-5)
 @test_broken isapprox(res[!, "DFDen"], estimates.cols[6], atol=1e-5, rtol=1e-5)
 
 kr = kenwardroger_matrices(m; FIM_σ²=:expected)
 estimates = coeftable(m, kr)
 
 res = DataFrame(CSV.File("Results battery cell lmertest.csv"))
-@test isapprox(
-    res[!, "coefficients.Estimate"], estimates.cols[1], atol=1e-10, rtol=1e-7
-)
-@test isapprox(
-    res[!, "coefficients.Std..Error"],
-    estimates.cols[2],
-    atol=1e-5,
-    rtol=1e-10,
-)
-@test isapprox(
-    res[!, "coefficients.df"], estimates.cols[6], atol=1e-10, rtol=1e-6
-)
+@test isapprox(res[!, "coefficients.Estimate"], estimates.cols[1], atol=1e-10, rtol=1e-7)
+@test isapprox(res[!, "coefficients.Std..Error"], estimates.cols[2], atol=1e-5, rtol=1e-10)
+@test isapprox(res[!, "coefficients.df"], estimates.cols[6], atol=1e-10, rtol=1e-6)

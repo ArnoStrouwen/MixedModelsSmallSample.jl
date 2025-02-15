@@ -49,15 +49,6 @@ estimates = coeftable(m, kr)
 res = DataFrame(CSV.File("Results pastry dough lmertest.csv"))
 res = vcat(res, res[5:7, :])
 deleteat!(res, 5:7)
-@test isapprox(
-    res[!, "coefficients.Estimate"], estimates.cols[1], atol=1e-8, rtol=1e-8
-)
-@test isapprox(
-    res[!, "coefficients.Std..Error"],
-    estimates.cols[2],
-    atol=1e-6,
-    rtol=1e-7,
-)
-@test isapprox(
-    res[!, "coefficients.df"], estimates.cols[6], atol=1e-7, rtol=1e-7
-)
+@test isapprox(res[!, "coefficients.Estimate"], estimates.cols[1], atol=1e-8, rtol=1e-8)
+@test isapprox(res[!, "coefficients.Std..Error"], estimates.cols[2], atol=1e-6, rtol=1e-7)
+@test isapprox(res[!, "coefficients.df"], estimates.cols[6], atol=1e-7, rtol=1e-7)

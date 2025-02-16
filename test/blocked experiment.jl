@@ -2,6 +2,7 @@ using CSV
 using DataFrames
 using MixedModels
 using Test
+using LinearAlgebra
 
 using KenwardRoger
 
@@ -34,21 +35,23 @@ fm = @formula(
         SS & SS
 )
 m = fit(MixedModel, fm, df; REML=true)
-kr = kenwardroger_matrices(m)
-
-estimates = coeftable(m, kr)
+kr = adjust_KR(m)
 
 res = DataFrame(CSV.File("Results pastry dough.csv"))
-@test isapprox(res[!, "Estimate"], estimates.cols[1], atol=1e-9, rtol=1e-9)
-@test isapprox(res[!, "Std Error"], estimates.cols[2], atol=1e-5, rtol=1e-6)
-@test isapprox(res[!, "DFDen"], estimates.cols[6], atol=1e-2, rtol=1e-4)
+@test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-9, rtol=1e-9)
+@test isapprox(res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-5, rtol=1e-6)
+@test isapprox(res[!, "DFDen"], kr.v, atol=1e-2, rtol=1e-4)
 
-kr = kenwardroger_matrices(m; FIM_σ²=:expected)
+kr = adjust_KR(m; FIM_σ²=:expected)
 
-estimates = coeftable(m, kr)
 res = DataFrame(CSV.File("Results pastry dough lmertest.csv"))
 res = vcat(res, res[5:7, :])
 deleteat!(res, 5:7)
-@test isapprox(res[!, "coefficients.Estimate"], estimates.cols[1], atol=1e-8, rtol=1e-8)
-@test isapprox(res[!, "coefficients.Std..Error"], estimates.cols[2], atol=1e-6, rtol=1e-7)
-@test isapprox(res[!, "coefficients.df"], estimates.cols[6], atol=1e-7, rtol=1e-7)
+@test isapprox(res[!, "coefficients.Estimate"], kr.m.β, atol=1e-8, rtol=1e-8)
+@test isapprox(
+    res[!, "coefficients.Std..Error"],
+    sqrt.(diag(kr.varcovar_adjusted)),
+    atol=1e-6,
+    rtol=1e-7,
+)
+@test isapprox(res[!, "coefficients.df"], kr.v, atol=1e-7, rtol=1e-7)

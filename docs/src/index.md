@@ -23,8 +23,7 @@ using KenwardRoger
 df = DataFrame(MixedModels.dataset(:sleepstudy))
 fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj)) # zerocorr is necessary
 m = fit(MixedModel, fm, df; REML=true)
-kr = kenwardroger_matrices(m; FIM_σ²=:expected) # :expected or :observed
-estimates = coeftable(m, kr)
+kr = adjust_KR(m; FIM_σ²=:expected) # :expected or :observed
 ```
 
 ## Mathematical details

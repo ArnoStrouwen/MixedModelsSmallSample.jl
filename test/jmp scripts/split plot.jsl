@@ -1,0 +1,8 @@
+Fit Model(
+	Effects(
+		:Whole Plots & Random, :FRH & RS, :RRH & RS, :YA & RS, :GC & RS, :FRH * :FRH,
+		:FRH * :RRH, :RRH * :RRH, :FRH * :YA, :RRH * :YA, :YA * :YA, :FRH * :GC,
+		:RRH * :GC, :YA * :GC, :GC * :GC
+	),
+	Y( :EFFICIENCY )
+)

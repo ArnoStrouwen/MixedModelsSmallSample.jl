@@ -30,7 +30,7 @@ fm = @formula(
 m = fit(MixedModel, fm, df; REML=true)
 kr = adjust_KR(m; FIM_σ²=:observed_SAS_MATCHING)
 
-res = DataFrame(CSV.File("Results battery cell.csv"))
+res = DataFrame(CSV.File("Results battery cell jmp.csv"))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-7, rtol=1e-7)
 @test isapprox(
     res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-5, rtol=1e-10

@@ -1,0 +1,20 @@
+Fit Model(
+	Y( :reaction ),
+	Effects( :days ),
+	Random Effects(
+		Intercept[:subj] & Random Coefficients( 1 ),
+		:days[:subj] & Random Coefficients( 2 )
+	),
+	Center Polynomials( 0 ),
+	NoBounds( 1 ),
+	Personality( "Mixed Model" ),
+	Run( Repeated Effects Covariance Parameter Estimates( 0 ) ),
+	SendToReport(
+		Dispatch(
+			{"Fixed Effects Parameter Estimates"},
+			"DFDen",
+			NumberColBox,
+			{Align Decimal Separator( 1 )}
+		)
+	)
+)

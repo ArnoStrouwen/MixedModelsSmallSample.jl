@@ -9,14 +9,14 @@ using KenwardRoger
 df = DataFrame(MixedModels.dataset(:sleepstudy))
 fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj))
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m)
+kr = adjust_KR(m; FIM_σ²=:observed_SAS_MATCHING)
 
 res = DataFrame(CSV.File("Results sleep study.csv"))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-9, rtol=1e-9)
 @test_broken isapprox(
     res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-5, rtol=1e-5
 )
-@test_broken isapprox(res[!, "DFDen"], estimates.cols[6], atol=1e-5, rtol=1e-5)
+@test_broken isapprox(res[!, "DFDen"], kr.v, atol=1e-5, rtol=1e-5)
 
 kr = adjust_KR(m; FIM_σ²=:expected)
 

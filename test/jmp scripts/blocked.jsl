@@ -1,0 +1,10 @@
+// make sure FR MC SS have the column property coding to -1 +1
+Fit Model(
+	Effects(
+		:Day & Random, :Flow Rate & RS, :Moisture Content & RS, :Screw Speed & RS,
+		:Flow Rate * :Flow Rate, :Flow Rate * :Moisture Content,
+		:Moisture Content * :Moisture Content, :Flow Rate * :Screw Speed,
+		:Moisture Content * :Screw Speed, :Screw Speed * :Screw Speed
+	),
+	Y( :Longitudinal Expansion Index)
+)

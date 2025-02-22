@@ -22,6 +22,6 @@ using SafeTestsets
         include("strip plot experiment.jl")
     end
     @safetestset "random slope" begin
-        include("random_slope.jl")
+        include("random slope.jl")
     end
 end

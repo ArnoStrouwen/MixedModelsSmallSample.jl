@@ -39,6 +39,11 @@ res = DataFrame(CSV.File("Results wind tunnel jmp.csv"))
 )
 @test isapprox(res[!, "DFDen"], kr.v, atol=1e-10, rtol=1e-8)
 
+res = DataFrame(CSV.File("Results wind tunnel sas.csv"))
+@test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-9, rtol=1e-9)
+@test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-8, rtol=1e-10)
+@test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=1e-7)
+
 kr = adjust_KR(m; FIM_σ²=:expected)
 
 res = DataFrame(CSV.File("Results wind tunnel lmertest.csv"))

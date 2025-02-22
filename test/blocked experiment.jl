@@ -35,12 +35,14 @@ fm = @formula(
         SS & SS
 )
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m)
+kr = adjust_KR(m; FIM_σ²=:observed_SAS_MATCHING)
 
 res = DataFrame(CSV.File("Results pastry dough.csv"))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-9, rtol=1e-9)
-@test isapprox(res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-5, rtol=1e-6)
-@test isapprox(res[!, "DFDen"], kr.v, atol=1e-2, rtol=1e-4)
+@test isapprox(
+    res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-9, rtol=1e-10
+)
+@test isapprox(res[!, "DFDen"], kr.v, atol=1e-10, rtol=1e-8)
 
 kr = adjust_KR(m; FIM_σ²=:expected)
 

@@ -38,18 +38,37 @@ function adjust_KR(m::MixedModel; FIM_σ²=:observed)
     )
     Zs = [I(n), Zsγ...]
     ZZs = [Z * Z' for Z in Zs]
-    V(σ²s) = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
-    function modified_profile_likelihood(σ²s)
-        Vinv = inv(V(σ²s))
-        return -1 / 2 * logdet(V(σ²s)) - 1 / 2 * logdet(X' * Vinv * X) -
-               1 / 2 * (y - X * β)' * Vinv * (y - X * β)
-    end
-    Vinv = inv(V(σ²s))
+    V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
+    Vinv = inv(V)
     P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
     Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
 
     if FIM_σ² == :observed
-        FIMσ² = -ForwardDiff.hessian(modified_profile_likelihood, σ²s)
+        Pvcov = Vinv - Vinv * X * Φ * X' * Vinv
+        FIMσ² = [
+            (
+                1 / 2 * tr(-Pvcov * ZZs[i] * Pvcov * ZZs[j]) -
+                1 / 2 *
+                (y - X * β)' *
+                Vinv *
+                (-2 * ZZs[i] * Vinv * ZZs[j]) *
+                Vinv *
+                (y - X * β)
+            ) for i in eachindex(σ²s), j in eachindex(σ²s)
+        ]
+    elseif FIM_σ² == :observed_SAS_MATCHING
+        Pvcov = Vinv - Vinv * X * Φ * X' * Vinv
+        FIMσ² = [
+            (
+                1 / 2 * tr(-Pvcov * ZZs[i] * Pvcov * ZZs[j]) -
+                1 / 2 *
+                (y - X * β)' *
+                Vinv *
+                (-2 * ZZs[i] * Pvcov * ZZs[j]) *
+                Vinv *
+                (y - X * β)
+            ) for i in eachindex(σ²s), j in eachindex(σ²s)
+        ]
     elseif FIM_σ² == :expected
         FIMσ² = [
             1 / 2 * tr(Vinv * ZZs[i] * Vinv * ZZs[j]) - tr(Φ * Q[i, j]) +

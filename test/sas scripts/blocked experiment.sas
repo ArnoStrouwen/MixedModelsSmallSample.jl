@@ -41,7 +41,32 @@ DATA PE;
 RUN;
 
 PROC EXPORT DATA=PE
-    OUTFILE='/home/u64165441/Results pastry dough sas.csv'
+    OUTFILE='/home/u64165441/Results pastry dough sas kr.csv'
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+ODS OUTPUT
+    ParameterEstimates=PE;
+    
+PROC GLIMMIX DATA=WORK.PD ASYCOV;
+	CLASS Day;
+    MODEL LEI = 
+        FR MC SS
+        FR*MC FR*SS
+        MC*SS
+        FR*FR MC*MC SS*SS / DDFM=Satterthwaite SOLUTION;
+    RANDOM INTERCEPT / SUBJECT=Day;
+
+RUN;
+
+DATA PE;
+    SET PE;
+    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
+RUN;
+
+PROC EXPORT DATA=PE
+    OUTFILE='/home/u64165441/Results pastry dough sas sw.csv'
     DBMS=CSV
     REPLACE;
 RUN;

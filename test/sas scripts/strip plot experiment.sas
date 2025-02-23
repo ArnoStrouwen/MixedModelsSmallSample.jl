@@ -38,7 +38,34 @@ DATA PE;
 RUN;
 
 PROC EXPORT DATA=PE
-    OUTFILE='/home/u64165441/Results battery cell sas.csv'
+    OUTFILE='/home/u64165441/Results battery cell sas kr.csv'
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+ODS OUTPUT
+    ParameterEstimates=PE;
+    
+PROC GLIMMIX DATA=WORK.BC ASYCOV;
+	CLASS WP SP;
+    MODEL Y = 
+        X1 X2 X3 X4 X5 X6
+        X1*X2 X1*X3 X1*X4 X1*X5 X1*X6 
+        X2*X3 X2*X4 X2*X5 X2*X6
+        X3*X4 X3*X5 X3*X6
+        X4*X5 X4*X6 
+        X5*X6 / DDFM=Satterthwaite SOLUTION;
+    RANDOM INTERCEPT / SUBJECT=WP;
+    RANDOM INTERCEPT / SUBJECT=SP;
+RUN;
+
+DATA PE;
+    SET PE;
+    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
+RUN;
+
+PROC EXPORT DATA=PE
+    OUTFILE='/home/u64165441/Results battery cell sas sw.csv'
     DBMS=CSV
     REPLACE;
 RUN;

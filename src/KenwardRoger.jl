@@ -12,6 +12,8 @@ using Markdown
 export adjust_KR
 export adjust_SW
 
+export vcov_varpar
+
 struct LinearMixedModelKR{Float64} <: MixedModel{Float64}
     m::LinearMixedModel{Float64}
     varcovar_adjusted::Matrix{Float64}
@@ -26,9 +28,8 @@ struct LinearMixedModelSW{Float64} <: MixedModel{Float64}
     v::Vector{Float64}
 end
 
-function adjust_KR(m::MixedModel; FIM_σ²=:observed)
+function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
     β = m.β
-    p = length(β)
     y = m.y
     X = m.X
     n = length(y)
@@ -48,7 +49,6 @@ function adjust_KR(m::MixedModel; FIM_σ²=:observed)
     Vinv = inv(V)
     P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
     Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
-
     if FIM_σ² == :observed
         Pvcov = Vinv - Vinv * X * Φ * X' * Vinv
         FIMσ² = [
@@ -83,7 +83,33 @@ function adjust_KR(m::MixedModel; FIM_σ²=:observed)
     else
         error("FIM_σ² needs to equal :observed or :expected")
     end
-    W = inv(FIMσ²)
+    return W = inv(FIMσ²)
+end
+
+function adjust_KR(m::MixedModel; FIM_σ²=:observed)
+    β = m.β
+    p = length(β)
+    y = m.y
+    X = m.X
+    n = length(y)
+    Φ = m.vcov
+
+    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    σ²s = [m.sigma^2, σ²γ...]
+    Zsγ = vcat(
+        [
+            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
+            i in 1:length(m.sigmas)
+        ]...,
+    )
+    Zs = [I(n), Zsγ...]
+    ZZs = [Z * Z' for Z in Zs]
+    V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
+    Vinv = inv(V)
+    P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
+    Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
+
+    W = vcov_varpar(m; FIM_σ²=FIM_σ²)
 
     factor = zeros(size(m.vcov)...)
     for i in eachindex(ZZs)
@@ -201,44 +227,8 @@ function adjust_SW(m::MixedModel; FIM_σ²=:observed)
     ZZs = [Z * Z' for Z in Zs]
     V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
     Vinv = inv(V)
-    P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
-    Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
 
-    if FIM_σ² == :observed
-        Pvcov = Vinv - Vinv * X * Φ * X' * Vinv
-        FIMσ² = [
-            (
-                1 / 2 * tr(-Pvcov * ZZs[i] * Pvcov * ZZs[j]) -
-                1 / 2 *
-                (y - X * β)' *
-                Vinv *
-                (-2 * ZZs[i] * Vinv * ZZs[j]) *
-                Vinv *
-                (y - X * β)
-            ) for i in eachindex(σ²s), j in eachindex(σ²s)
-        ]
-    elseif FIM_σ² == :observed_SAS_MATCHING
-        Pvcov = Vinv - Vinv * X * Φ * X' * Vinv
-        FIMσ² = [
-            (
-                1 / 2 * tr(-Pvcov * ZZs[i] * Pvcov * ZZs[j]) -
-                1 / 2 *
-                (y - X * β)' *
-                Vinv *
-                (-2 * ZZs[i] * Pvcov * ZZs[j]) *
-                Vinv *
-                (y - X * β)
-            ) for i in eachindex(σ²s), j in eachindex(σ²s)
-        ]
-    elseif FIM_σ² == :expected
-        FIMσ² = [
-            1 / 2 * tr(Vinv * ZZs[i] * Vinv * ZZs[j]) - tr(Φ * Q[i, j]) +
-            1 / 2 * tr(Φ * P[i] * Φ * P[j]) for i in eachindex(σ²s), j in eachindex(σ²s)
-        ]
-    else
-        error("FIM_σ² needs to equal :observed or :expected")
-    end
-    W = inv(FIMσ²)
+    W = vcov_varpar(m; FIM_σ²=FIM_σ²)
     v = zeros(p)
     for k in eachindex(β)
         c = 1

@@ -1,0 +1,9 @@
+Fit Model(
+	Y( :log_data ),
+	Effects( :formulation, :period, :sequence ),
+	Random Effects( :subject ),
+	NoBounds( 1 ),
+	Personality( "Standard Least Squares" ),
+	Method( "REML" ),
+	Emphasis( "Minimal Report" ),
+)

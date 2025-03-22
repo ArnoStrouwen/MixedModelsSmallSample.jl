@@ -35,16 +35,28 @@ function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
     n = length(y)
     Φ = m.vcov
 
-    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    nθs = [length(sigmas) for sigmas in m.sigmas]
+    k(b, r, c) = (nθs[b] * (c - 1) + r - sum(1:c))
+    σ²γ = [
+        if r == c
+            m.sigmas[b][r]^2
+        else
+            m.sigmarhos[b][2][k(b, r, c)] * m.sigmas[b][r] * m.sigmas[b][c]
+        end for (b, r, c) in m.parmap
+    ]
     σ²s = [m.sigma^2, σ²γ...]
-    Zsγ = vcat(
-        [
-            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
-            i in 1:length(m.sigmas)
-        ]...,
-    )
+    Zsγ = [
+        if r == c
+            m.reterms[b][:, r:length(m.sigmas[b]):end]
+        else
+            (
+                m.reterms[b][:, c:length(m.sigmas[b]):end],
+                m.reterms[b][:, r:length(m.sigmas[b]):end],
+            )
+        end for (b, r, c) in m.parmap
+    ]
     Zs = [I(n), Zsγ...]
-    ZZs = [Z * Z' for Z in Zs]
+    ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
     V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
     Vinv = inv(V)
     P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
@@ -94,16 +106,28 @@ function adjust_KR(m::MixedModel; FIM_σ²=:observed)
     n = length(y)
     Φ = m.vcov
 
-    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    nθs = [length(sigmas) for sigmas in m.sigmas]
+    k(b, r, c) = (nθs[b] * (c - 1) + r - sum(1:c))
+    σ²γ = [
+        if r == c
+            m.sigmas[b][r]^2
+        else
+            m.sigmarhos[b][2][k(b, r, c)] * m.sigmas[b][r] * m.sigmas[b][c]
+        end for (b, r, c) in m.parmap
+    ]
     σ²s = [m.sigma^2, σ²γ...]
-    Zsγ = vcat(
-        [
-            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
-            i in 1:length(m.sigmas)
-        ]...,
-    )
+    Zsγ = [
+        if r == c
+            m.reterms[b][:, r:length(m.sigmas[b]):end]
+        else
+            (
+                m.reterms[b][:, c:length(m.sigmas[b]):end],
+                m.reterms[b][:, r:length(m.sigmas[b]):end],
+            )
+        end for (b, r, c) in m.parmap
+    ]
     Zs = [I(n), Zsγ...]
-    ZZs = [Z * Z' for Z in Zs]
+    ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
     V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
     Vinv = inv(V)
     P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
@@ -215,16 +239,28 @@ function adjust_SW(m::MixedModel; FIM_σ²=:observed)
     n = length(y)
     Φ = m.vcov
 
-    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    nθs = [length(sigmas) for sigmas in m.sigmas]
+    k(b, r, c) = (nθs[b] * (c - 1) + r - sum(1:c))
+    σ²γ = [
+        if r == c
+            m.sigmas[b][r]^2
+        else
+            m.sigmarhos[b][2][k(b, r, c)] * m.sigmas[b][r] * m.sigmas[b][c]
+        end for (b, r, c) in m.parmap
+    ]
     σ²s = [m.sigma^2, σ²γ...]
-    Zsγ = vcat(
-        [
-            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
-            i in 1:length(m.sigmas)
-        ]...,
-    )
+    Zsγ = [
+        if r == c
+            m.reterms[b][:, r:length(m.sigmas[b]):end]
+        else
+            (
+                m.reterms[b][:, c:length(m.sigmas[b]):end],
+                m.reterms[b][:, r:length(m.sigmas[b]):end],
+            )
+        end for (b, r, c) in m.parmap
+    ]
     Zs = [I(n), Zsγ...]
-    ZZs = [Z * Z' for Z in Zs]
+    ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
     V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
     Vinv = inv(V)
 

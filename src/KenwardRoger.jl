@@ -14,6 +14,9 @@ export adjust_SW
 
 export vcov_varpar
 
+export ftest_KR
+export ftest_SW
+
 struct LinearMixedModelKR{Float64} <: MixedModel{Float64}
     m::LinearMixedModel{Float64}
     varcovar_adjusted::Matrix{Float64}
@@ -333,5 +336,109 @@ function Base.show(io::IO, ::MIME"text/markdown", m::LinearMixedModelSW)
     align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
     table = Markdown.Table(rows, align)
     return print(io, Markdown.MD(table))
+end
+
+function ftest_SW(m::LinearMixedModel, L; FIM_σ²=:observed)
+    q = size(L, 2)
+    β = m.β
+    p = length(β)
+    y = m.y
+    X = m.X
+    n = length(y)
+    Φ = m.vcov
+
+    covLβ = L' * Φ * L
+    M = L * inv(L' * Φ * L) * L'
+    F = eigen(Hermitian(covLβ))
+    d = F.values
+    P = F.vectors
+    L̃ = L * P
+
+    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    σ²s = [m.sigma^2, σ²γ...]
+    Zsγ = vcat(
+        [
+            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
+            i in 1:length(m.sigmas)
+        ]...,
+    )
+    Zs = [I(n), Zsγ...]
+    ZZs = [Z * Z' for Z in Zs]
+    V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
+    Vinv = inv(V)
+
+    W = vcov_varpar(m; FIM_σ²=FIM_σ²)
+    vs = zeros(q)
+    for i in eachindex(vs)
+        grad = [
+            first(L̃[:, i]' * Φ * X' * Vinv * ZZ * Vinv * X * Φ * L̃[:, i]) for ZZ in ZZs
+        ]
+        vs[i] =
+            2 * (first(L̃[:, i]' * inv(X' * inv(V) * X) * L̃[:, i]))^2 / (grad' * W * grad)
+    end
+
+    EQ = sum(νᵢ / (νᵢ - 2) for νᵢ in vs)
+    v = 2 * EQ / (EQ - q)
+
+    Fstar = (1 / q * β' * M * β)
+    return (v, Fstar)
+end
+function ftest_KR(m::LinearMixedModel, L; FIM_σ²=:observed)
+    c = q = size(L, 2)
+    β = m.β
+    p = length(β)
+    y = m.y
+    X = m.X
+    n = length(y)
+    Φ = m.vcov
+
+    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    σ²s = [m.sigma^2, σ²γ...]
+    Zsγ = vcat(
+        [
+            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
+            i in 1:length(m.sigmas)
+        ]...,
+    )
+    Zs = [I(n), Zsγ...]
+    ZZs = [Z * Z' for Z in Zs]
+    V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
+    Vinv = inv(V)
+    P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
+    Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
+
+    W = vcov_varpar(m; FIM_σ²=FIM_σ²)
+
+    factor = zeros(size(m.vcov)...)
+    for i in eachindex(ZZs)
+        for j in eachindex(ZZs)
+            factor += W[i, j] * (Q[i, j] - P[i] * Φ * P[j])
+        end
+    end
+    varcovar_adjusted = Φ + 2 * Φ * factor * Φ
+    error_adjusted = sqrt.(diag(varcovar_adjusted))
+
+    M = L * inv(L' * Φ * L) * L'
+    A1 = 0.0
+    A2 = 0.0
+    for i in eachindex(σ²s)
+        for j in eachindex(σ²s)
+            A1 += W[i, j] * tr(M * Φ * P[i] * Φ) * tr(M * Φ * P[j] * Φ)
+            A2 += W[i, j] * tr(M * Φ * P[i] * Φ * M * Φ * P[j] * Φ)
+        end
+    end
+    B = (A1 + 6A2) / (2c)
+    g = ((c + 1)A1 - (c + 4)A2) / ((c + 2)A2)
+    c1 = g / (3c + 2(1 - g))
+    c2 = (c - g) / (3c + 2(1 - g))
+    c3 = (c + 2 - g) / (3c + 2(1 - g))
+    Estar = inv(1 - A2 / c)
+    Vstar = (2 / c) * (1 + c1 * B) / ((1 - c2 * B)^2 * (1 - c3 * B))
+    ρ = Vstar / (2 * Estar^2)
+    v = 4 + (c + 2) / (c * ρ - 1)
+    λ = v / (Estar * (v - 2))
+    covLβ = L' * Φ * L
+    Fstar = λ * (1 / q * β' * M * β)
+    return (v, Fstar)
 end
 end

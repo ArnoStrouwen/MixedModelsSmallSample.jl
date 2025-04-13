@@ -1,6 +1,5 @@
 module MixedModelsSmallSample
 
-using ForwardDiff
 using MixedModels
 using Distributions
 using LinearAlgebra

@@ -27,4 +27,7 @@ using SafeTestsets
     @safetestset "categorical" begin
         include("categorical.jl")
     end
+    @safetestset "varia" begin
+        include("varia.jl")
+    end
 end

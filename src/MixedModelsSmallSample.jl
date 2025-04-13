@@ -31,7 +31,14 @@ struct LinearMixedModelSW{Float64} <: MixedModel{Float64}
     v::Vector{Float64}
 end
 
+function validation(m)
+    @assert m.optsum.REML "Restricted maximum likelihood must be used, instead of maximum likelihood."
+    return nothing
+end
+
 function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
+    validation(m)
+    
     β = m.β
     y = m.y
     X = m.X
@@ -102,6 +109,8 @@ function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
 end
 
 function adjust_KR(m::MixedModel; FIM_σ²=:observed)
+    validation(m)
+    
     β = m.β
     p = length(β)
     y = m.y
@@ -235,6 +244,8 @@ function Base.show(io::IO, ::MIME"text/markdown", m::LinearMixedModelKR)
 end
 
 function adjust_SW(m::MixedModel; FIM_σ²=:observed)
+    validation(m)
+    
     β = m.β
     p = length(β)
     y = m.y
@@ -339,6 +350,8 @@ function Base.show(io::IO, ::MIME"text/markdown", m::LinearMixedModelSW)
 end
 
 function ftest_SW(m::LinearMixedModel, L; FIM_σ²=:observed)
+    validation(m)
+    
     q = size(L, 2)
     β = m.β
     p = length(β)
@@ -384,6 +397,8 @@ function ftest_SW(m::LinearMixedModel, L; FIM_σ²=:observed)
     return (v, Fstar)
 end
 function ftest_KR(m::LinearMixedModel, L; FIM_σ²=:observed)
+    validation(m)
+    
     c = q = size(L, 2)
     β = m.β
     p = length(β)

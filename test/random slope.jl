@@ -4,7 +4,7 @@ using MixedModels
 using Test
 using LinearAlgebra
 
-using KenwardRoger
+using MixedModelsSmallSample
 
 df = DataFrame(MixedModels.dataset(:sleepstudy))
 fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj))

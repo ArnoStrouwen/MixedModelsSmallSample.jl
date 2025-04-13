@@ -1,15 +1,19 @@
 ```@meta
-CurrentModule = KenwardRoger
+CurrentModule = MixedModelsSmallSample
 ```
 
-# KenwardRoger
+# MixedModelsSmallSample
 
 The confidence intervals and hypothesis tests for the fixed effects in
 [MixedModels.jl](https://juliastats.org/MixedModels.jl/stable/)
 are based on large sample approximations.
 This package implements small sample corrections for these intervals and tests, as described in:
 
-> Kenward, Michael G., and James H. Roger. "Small sample inference for fixed effects from restricted maximum likelihood." Biometrics (1997): 983-997.
+> Kenward, Michael G., and James H. Roger. "Small sample inference for fixed effects from restricted maximum likelihood." Biometrics (1997): 983-997,
+
+and in:
+
+> Hrong-Tai Fai, Alex, and Paul L. Cornelius. "Approximate F-tests of multiple degree of freedom hypotheses in generalized least squares analyses of unbalanced split-plot experiments." Journal of statistical computation and simulation 54.4 (1996): 363-378.
 
 ## Getting Started
 
@@ -151,7 +155,7 @@ The interactions involving both a hard and an easy-to-change factor
 have similar degrees of freedom as terms only involving easy-to-change factors.
 
 ```@example split_plot
-using KenwardRoger
+using MixedModelsSmallSample
 kr = adjust_KR(m; FIM_σ²=:expected)
 ```
 
@@ -166,7 +170,7 @@ using CSV
 using DataFrames
 using MixedModels
 
-using KenwardRoger
+using MixedModelsSmallSample
 
 df = DataFrame(MixedModels.dataset(:sleepstudy))
 fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj)) # zerocorr is necessary
@@ -193,13 +197,13 @@ In the above example the `zerocorr` is necessary.
 
 ### Random intercept
 
-  - [Blocked experiment](https://github.com/ArnoStrouwen/KenwardRoger.jl/blob/master/test/blocked%20experiment.jl)
-  - [Split-plot experiment](https://github.com/ArnoStrouwen/KenwardRoger.jl/blob/master/test/split%20plot%20experiment.jl)
-  - [Strip-plot experiment](https://github.com/ArnoStrouwen/KenwardRoger.jl/blob/master/test/strip%20plot%20experiment.jl)
+  - [Blocked experiment](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/blocked%20experiment.jl)
+  - [Split-plot experiment](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/split%20plot%20experiment.jl)
+  - [Strip-plot experiment](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/strip%20plot%20experiment.jl)
 
 ### Random intercept and main effects
 
-  - [Single random slope](https://github.com/ArnoStrouwen/KenwardRoger.jl/blob/master/test/random%20slope.jl)
+  - [Single random slope](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/random%20slope.jl)
 
 ## Similar software
 
@@ -210,5 +214,5 @@ In the above example the `zerocorr` is necessary.
 ## API
 
 ```@autodocs
-Modules = [KenwardRoger]
+Modules = [MixedModelsSmallSample]
 ```

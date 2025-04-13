@@ -1,16 +1,16 @@
 using Test
 using SafeTestsets
 
-@testset "KenwardRoger.jl" begin
+@testset "MixedModelsSmallSample.jl" begin
     @safetestset "Code quality (Aqua.jl)" begin
         using Aqua
-        using KenwardRoger
-        Aqua.test_all(KenwardRoger)
+        using MixedModelsSmallSample
+        Aqua.test_all(MixedModelsSmallSample)
     end
     @safetestset "Code linting (JET.jl)" begin
         using JET
-        using KenwardRoger
-        JET.test_package(KenwardRoger; target_defined_modules=true)
+        using MixedModelsSmallSample
+        JET.test_package(MixedModelsSmallSample; target_defined_modules=true)
     end
     @safetestset "blocked experiment" begin
         include("blocked experiment.jl")

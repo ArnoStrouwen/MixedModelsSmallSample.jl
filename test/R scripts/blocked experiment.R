@@ -1,5 +1,5 @@
 library(lmerTest)
-df <- read.csv("Data Pastry Dough Experiment Chapter 7.csv")
+df <- read.csv("data/Data Pastry Dough Experiment Chapter 7.csv")
 names(df)[names(df) == 'Flow.Rate'] <- 'FR'
 names(df)[names(df) == 'Moisture.Content'] <- 'MC'
 names(df)[names(df) == 'Screw.Speed'] <- 'SS'

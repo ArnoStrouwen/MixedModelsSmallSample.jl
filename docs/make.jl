@@ -16,8 +16,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/ArnoStrouwen/KenwardRoger.jl",
-    devbranch="master",
-    push_preview=true,
-    forcepush=true,
+    repo="github.com/ArnoStrouwen/KenwardRoger.jl", devbranch="master", push_preview=true
 )

@@ -1,5 +1,5 @@
 library(lmerTest)
-df <- read.csv("Data battery cell Chapter 11.csv")
+df <- read.csv("data/Data battery cell Chapter 11.csv")
 fm <- lmer(Y~ 1 + X1 + X2 + X3 + X4 + X5 + X6 +
               X1*X2 + X1*X3 + X1*X4 + X1*X5 + X1*X6 +
               X2*X3 + X2*X4 + X2*X5 + X2*X6 +

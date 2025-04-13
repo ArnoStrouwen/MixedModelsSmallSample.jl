@@ -1,5 +1,5 @@
 library(lmerTest)
-df <- read.csv("Data wind tunnel Chapter 10.csv")
+df <- read.csv("data/Data wind tunnel Chapter 10.csv")
 fm <- lmer(EFFICIENCY ~ 1 + FRH + RRH + YA + GC + FRH*RRH + FRH*YA + FRH*GC + RRH*YA + RRH*GC + YA*GC + I(FRH^2) + I(RRH^2) + I(YA^2) + I(GC^2) + (1 | Whole.Plots), data=df)
 test = summary(fm, ddf = "Kenward-Roger")
 write.csv(test[10], "Results wind tunnel lmertest.csv")

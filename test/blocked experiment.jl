@@ -4,7 +4,7 @@ using MixedModels
 using Test
 using LinearAlgebra
 
-using KenwardRoger
+using MixedModelsSmallSample
 
 df = DataFrame(CSV.File("Data Pastry Dough Experiment Chapter 7.csv"))
 rename!(df, "Flow Rate" => :FR, "Moisture Content" => :MC, "Screw Speed" => :SS)

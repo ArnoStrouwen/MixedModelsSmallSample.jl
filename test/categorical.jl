@@ -4,7 +4,7 @@ using MixedModels
 using Test
 using LinearAlgebra
 
-using KenwardRoger
+using MixedModelsSmallSample
 
 df = DataFrame(CSV.File("Data bioequivalence.csv"))
 

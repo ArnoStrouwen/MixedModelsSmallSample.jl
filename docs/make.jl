@@ -1,14 +1,16 @@
-using KenwardRoger
+using MixedModelsSmallSample
 using Documenter
 
-DocMeta.setdocmeta!(KenwardRoger, :DocTestSetup, :(using KenwardRoger); recursive=true)
+DocMeta.setdocmeta!(
+    MixedModelsSmallSample, :DocTestSetup, :(using MixedModelsSmallSample); recursive=true
+)
 
 makedocs(;
-    modules=[KenwardRoger],
+    modules=[MixedModelsSmallSample],
     authors="Arno Strouwen",
-    sitename="KenwardRoger.jl",
+    sitename="MixedModelsSmallSample.jl",
     format=Documenter.HTML(;
-        canonical="https://ArnoStrouwen.github.io/KenwardRoger.jl",
+        canonical="https://ArnoStrouwen.github.io/MixedModelsSmallSample.jl",
         edit_link="master",
         assets=String[],
     ),
@@ -16,5 +18,7 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/ArnoStrouwen/KenwardRoger.jl", devbranch="master", push_preview=true
+    repo="github.com/ArnoStrouwen/MixedModelsSmallSample.jl",
+    devbranch="master",
+    push_preview=true,
 )

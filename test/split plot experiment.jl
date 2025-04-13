@@ -4,7 +4,7 @@ using MixedModels
 using Test
 using LinearAlgebra
 
-using KenwardRoger
+using MixedModelsSmallSample
 
 df = DataFrame(CSV.File("Data wind tunnel Chapter 10.csv"))
 rename!(df, "Whole Plots" => :WP)

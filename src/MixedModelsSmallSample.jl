@@ -37,7 +37,7 @@ end
 
 function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
     validation(m)
-    
+
     β = m.β
     y = m.y
     X = m.X
@@ -109,7 +109,7 @@ end
 
 function adjust_KR(m::MixedModel; FIM_σ²=:observed)
     validation(m)
-    
+
     β = m.β
     p = length(β)
     y = m.y
@@ -183,68 +183,9 @@ function adjust_KR(m::MixedModel; FIM_σ²=:observed)
     return LinearMixedModelKR(m, varcovar_adjusted, W, P, Q, v)
 end
 
-function StatsAPI.coeftable(m::LinearMixedModelKR)
-    t = TDist.(m.v)
-    error_adjusted = sqrt.(diag(m.varcovar_adjusted))
-    tstar = m.m.β ./ error_adjusted
-    p = 2 * ccdf.(t, abs.(tstar))
-    α = 0.05
-    t_α = quantile.(t, 1 - α / 2)
-    δ = t_α .* error_adjusted
-    lb_ci_alpha05 = m.m.β .- δ
-    ub_ci_alpha05 = m.m.β .+ δ
-    num_df = ones(length(m.m.β)) # IS THIS ALWAYS ONE OR LAMBDA?
-    return CoefTable(
-        hcat(m.m.β, error_adjusted, lb_ci_alpha05, ub_ci_alpha05, num_df, m.v, tstar, p),
-        ["Coef.", "Std. Error", "LB coef.", "UB coef.", "NumDF", "DenDF", "t", "Pr(>|t|)"],
-        coefnames(m.m),
-        8, # pvalcol
-        7, # teststatcol
-    )
-end
-
-Base.show(io::IO, m::LinearMixedModelKR) = show(io, coeftable(m))
-
-function Base.show(io::IO, ::MIME"text/latex", m::LinearMixedModelKR)
-    ct = coeftable(m)
-    first_row = [vcat("", ct.colnms)]
-    body_rows = [
-        vcat(ct.rownms[i], [string(round(col[i]; sigdigits=5)) for col in ct.cols]) for
-        i in eachindex(ct.cols[1])
-    ]
-    rows = vcat(first_row, body_rows)
-    align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
-    table = Markdown.Table(rows, align)
-    return print(io, Markdown.latex(table))
-end
-function Base.show(io::IO, ::MIME"text/html", m::LinearMixedModelKR)
-    ct = coeftable(m)
-    first_row = [vcat("", ct.colnms)]
-    body_rows = [
-        vcat(ct.rownms[i], [string(round(col[i]; sigdigits=5)) for col in ct.cols]) for
-        i in eachindex(ct.cols[1])
-    ]
-    rows = vcat(first_row, body_rows)
-    align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
-    table = Markdown.Table(rows, align)
-    return print(io, Markdown.html(table))
-end
-function Base.show(io::IO, ::MIME"text/markdown", m::LinearMixedModelKR)
-    ct = coeftable(m)
-    first_row = [vcat("", ct.colnms)]
-    body_rows = [
-        vcat(ct.rownms[i], [string(round(col[i]; sigdigits=5)) for col in ct.cols]) for
-        i in eachindex(ct.cols[1])
-    ]
-    rows = vcat(first_row, body_rows)
-    align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
-    table = Markdown.Table(rows, align)
-    return print(io, Markdown.MD(table))
-end
-
 function adjust_SW(m::MixedModel; FIM_σ²=:observed)
     validation(m)
-    
+
     β = m.β
     p = length(β)
     y = m.y
@@ -289,68 +230,9 @@ function adjust_SW(m::MixedModel; FIM_σ²=:observed)
     return LinearMixedModelSW(m, W, v)
 end
 
-function StatsAPI.coeftable(m::LinearMixedModelSW)
-    t = TDist.(m.v)
-    error = m.m.stderror
-    tstar = m.m.β ./ error
-    p = 2 * ccdf.(t, abs.(tstar))
-    α = 0.05
-    t_α = quantile.(t, 1 - α / 2)
-    δ = t_α .* error
-    lb_ci_alpha05 = m.m.β .- δ
-    ub_ci_alpha05 = m.m.β .+ δ
-    num_df = ones(length(m.m.β)) # IS THIS ALWAYS ONE OR LAMBDA?
-    return CoefTable(
-        hcat(m.m.β, error, lb_ci_alpha05, ub_ci_alpha05, num_df, m.v, tstar, p),
-        ["Coef.", "Std. Error", "LB coef.", "UB coef.", "NumDF", "DenDF", "t", "Pr(>|t|)"],
-        coefnames(m.m),
-        8, # pvalcol
-        7, # teststatcol
-    )
-end
-
-Base.show(io::IO, m::LinearMixedModelSW) = show(io, coeftable(m))
-
-function Base.show(io::IO, ::MIME"text/latex", m::LinearMixedModelSW)
-    ct = coeftable(m)
-    first_row = [vcat("", ct.colnms)]
-    body_rows = [
-        vcat(ct.rownms[i], [string(round(col[i]; sigdigits=5)) for col in ct.cols]) for
-        i in eachindex(ct.cols[1])
-    ]
-    rows = vcat(first_row, body_rows)
-    align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
-    table = Markdown.Table(rows, align)
-    return print(io, Markdown.latex(table))
-end
-function Base.show(io::IO, ::MIME"text/html", m::LinearMixedModelSW)
-    ct = coeftable(m)
-    first_row = [vcat("", ct.colnms)]
-    body_rows = [
-        vcat(ct.rownms[i], [string(round(col[i]; sigdigits=5)) for col in ct.cols]) for
-        i in eachindex(ct.cols[1])
-    ]
-    rows = vcat(first_row, body_rows)
-    align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
-    table = Markdown.Table(rows, align)
-    return print(io, Markdown.html(table))
-end
-function Base.show(io::IO, ::MIME"text/markdown", m::LinearMixedModelSW)
-    ct = coeftable(m)
-    first_row = [vcat("", ct.colnms)]
-    body_rows = [
-        vcat(ct.rownms[i], [string(round(col[i]; sigdigits=5)) for col in ct.cols]) for
-        i in eachindex(ct.cols[1])
-    ]
-    rows = vcat(first_row, body_rows)
-    align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
-    table = Markdown.Table(rows, align)
-    return print(io, Markdown.MD(table))
-end
-
 function ftest_SW(m::LinearMixedModel, L; FIM_σ²=:observed)
     validation(m)
-    
+
     q = size(L, 2)
     β = m.β
     p = length(β)
@@ -397,7 +279,7 @@ function ftest_SW(m::LinearMixedModel, L; FIM_σ²=:observed)
 end
 function ftest_KR(m::LinearMixedModel, L; FIM_σ²=:observed)
     validation(m)
-    
+
     c = q = size(L, 2)
     β = m.β
     p = length(β)
@@ -455,4 +337,5 @@ function ftest_KR(m::LinearMixedModel, L; FIM_σ²=:observed)
     Fstar = λ * (1 / q * β' * M * β)
     return (v, Fstar)
 end
+include("show.jl")
 end

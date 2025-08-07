@@ -23,16 +23,16 @@ one_minus_one_coding!(df[!, :SS])
 fm = @formula(
     LEI ~
         1 +
-        (1 | Day) +
-        FR +
-        MC +
-        SS +
-        FR & MC +
-        FR & SS +
-        MC & SS +
-        FR & FR +
-        MC & MC +
-        SS & SS
+    (1 | Day) +
+    FR +
+    MC +
+    SS +
+    FR & MC +
+    FR & SS +
+    MC & SS +
+    FR & FR +
+    MC & MC +
+    SS & SS
 )
 m = fit(MixedModel, fm, df; REML=true)
 kr = adjust_KR(m; FIM_σ²=:observed_SAS_MATCHING)

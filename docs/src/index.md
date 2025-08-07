@@ -126,21 +126,21 @@ using MixedModels
 fm = @formula(
     EFFICIENCY ~
         1 +
-        (1 | WP) +
-        FRH +
-        RRH +
-        YA +
-        GC +
-        FRH & RRH +
-        FRH & YA +
-        FRH & GC +
-        RRH & YA +
-        RRH & GC +
-        YA & GC +
-        FRH & FRH +
-        RRH & RRH +
-        YA & YA +
-        GC & GC
+    (1 | WP) +
+    FRH +
+    RRH +
+    YA +
+    GC +
+    FRH & RRH +
+    FRH & YA +
+    FRH & GC +
+    RRH & YA +
+    RRH & GC +
+    YA & GC +
+    FRH & FRH +
+    RRH & RRH +
+    YA & YA +
+    GC & GC
 )
 m = fit(MixedModel, fm, df; REML=true)
 ```

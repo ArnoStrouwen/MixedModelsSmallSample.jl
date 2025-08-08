@@ -169,14 +169,6 @@ kr = adjust(m; method=KenwardRoger(), FIM_σ²=:expected)
 sw = adjust(m; method=Satterthwaite(), FIM_σ²=:expected)
 ```
 
-For backward compatibility, the original functions are still available:
-
-```@example split_plot
-# Original interface (still supported)
-kr_old = adjust_KR(m; FIM_σ²=:expected)
-sw_old = adjust_SW(m; FIM_σ²=:expected)
-```
-
 The standard errors on the estimates are also slightly different.
 However, for this specific experiment, the adjustment does not have a large effect.
 An example where there is a large difference in standard error will be added later.
@@ -202,13 +194,6 @@ kr = adjust(m; FIM_σ²=:expected) # :expected or :observed
 # Or explicitly specify the method:
 kr = adjust(m; method=KenwardRoger(), FIM_σ²=:expected)
 sw = adjust(m; method=Satterthwaite(), FIM_σ²=:expected)
-```
-
-The original function-based interface remains available for backward compatibility:
-
-```@example slope
-# Original interface (still supported)
-kr_old = adjust_KR(m; FIM_σ²=:expected) # :expected or :observed
 ```
 
 ## Mathematical details

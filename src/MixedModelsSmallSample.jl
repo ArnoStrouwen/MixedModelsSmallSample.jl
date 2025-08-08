@@ -8,8 +8,6 @@ using StatsAPI: StatsAPI, coeftable
 using StatsBase: StatsBase, CoefTable
 using Markdown
 
-export adjust_KR
-export adjust_SW
 export adjust
 
 export KenwardRoger
@@ -122,135 +120,129 @@ function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
     return W = inv(FIMσ²)
 end
 
-function adjust_KR(m::MixedModel; FIM_σ²=:observed)
-    validation(m)
-
-    β = m.β
-    p = length(β)
-    y = m.y
-    X = m.X
-    n = length(y)
-    Φ = m.vcov
-
-    nθs = [length(sigmas) for sigmas in m.sigmas]
-    k(b, r, c) = (nθs[b] * (c - 1) + r - sum(1:c))
-    σ²γ = [
-        if r == c
-            m.sigmas[b][r]^2
-        else
-            m.sigmarhos[b][2][k(b, r, c)] * m.sigmas[b][r] * m.sigmas[b][c]
-        end for (b, r, c) in m.parmap
-    ]
-    σ²s = [m.sigma^2, σ²γ...]
-    Zsγ = [
-        if r == c
-            m.reterms[b][:, r:length(m.sigmas[b]):end]
-        else
-            (
-                m.reterms[b][:, c:length(m.sigmas[b]):end],
-                m.reterms[b][:, r:length(m.sigmas[b]):end],
-            )
-        end for (b, r, c) in m.parmap
-    ]
-    Zs = [I(n), Zsγ...]
-    ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
-    V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
-    Vinv = inv(V)
-    P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
-    Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
-
-    W = vcov_varpar(m; FIM_σ²=FIM_σ²)
-
-    factor = zeros(size(m.vcov)...)
-    for i in eachindex(ZZs)
-        for j in eachindex(ZZs)
-            factor += W[i, j] * (Q[i, j] - P[i] * Φ * P[j])
-        end
-    end
-    varcovar_adjusted = Φ + 2 * Φ * factor * Φ
-    error_adjusted = sqrt.(diag(varcovar_adjusted))
-
-    v = zeros(p)
-    for k in eachindex(β)
-        c = 1
-        C = zeros(p, c)
-        C[k, 1] = 1
-        M = C * inv(C' * Φ * C) * C'
-        A1 = 0.0
-        A2 = 0.0
-        for i in eachindex(σ²s)
-            for j in eachindex(σ²s)
-                A1 += W[i, j] * tr(M * Φ * P[i] * Φ) * tr(M * Φ * P[j] * Φ)
-                A2 += W[i, j] * tr(M * Φ * P[i] * Φ * M * Φ * P[j] * Φ)
-            end
-        end
-        B = (A1 + 6A2) / (2c)
-        g = ((c + 1)A1 - (c + 4)A2) / ((c + 2)A2)
-        c1 = g / (3c + 2(1 - g))
-        c2 = (c - g) / (3c + 2(1 - g))
-        c3 = (c + 2 - g) / (3c + 2(1 - g))
-        Estar = inv(1 - A2 / c)
-        Vstar = (2 / c) * (1 + c1 * B) / ((1 - c2 * B)^2 * (1 - c3 * B))
-        ρ = Vstar / (2 * Estar^2)
-        v[k] = 4 + (c + 2) / (c * ρ - 1)
-        #λ = v / (Estar * (v - 2))
-    end
-    return LinearMixedModelKR(m, varcovar_adjusted, W, P, Q, v)
-end
-
-function adjust_SW(m::MixedModel; FIM_σ²=:observed)
-    validation(m)
-
-    β = m.β
-    p = length(β)
-    y = m.y
-    X = m.X
-    n = length(y)
-    Φ = m.vcov
-
-    nθs = [length(sigmas) for sigmas in m.sigmas]
-    k(b, r, c) = (nθs[b] * (c - 1) + r - sum(1:c))
-    σ²γ = [
-        if r == c
-            m.sigmas[b][r]^2
-        else
-            m.sigmarhos[b][2][k(b, r, c)] * m.sigmas[b][r] * m.sigmas[b][c]
-        end for (b, r, c) in m.parmap
-    ]
-    σ²s = [m.sigma^2, σ²γ...]
-    Zsγ = [
-        if r == c
-            m.reterms[b][:, r:length(m.sigmas[b]):end]
-        else
-            (
-                m.reterms[b][:, c:length(m.sigmas[b]):end],
-                m.reterms[b][:, r:length(m.sigmas[b]):end],
-            )
-        end for (b, r, c) in m.parmap
-    ]
-    Zs = [I(n), Zsγ...]
-    ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
-    V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
-    Vinv = inv(V)
-
-    W = vcov_varpar(m; FIM_σ²=FIM_σ²)
-    v = zeros(p)
-    for k in eachindex(β)
-        c = 1
-        C = zeros(p, c)
-        C[k, 1] = 1
-        grad = [first(C' * Φ * X' * Vinv * ZZ * Vinv * X * Φ * C) for ZZ in ZZs]
-        v[k] = 2 * (first(C' * inv(X' * inv(V) * X) * C))^2 / (grad' * W * grad)
-    end
-    return LinearMixedModelSW(m, W, v)
-end
-
 # Unified adjust function with method dispatch
 function adjust(m::MixedModel; method::AbstractLMMSS=KenwardRoger(), FIM_σ²=:observed)
+    validation(m)
+
     if method isa KenwardRoger
-        return adjust_KR(m; FIM_σ²=FIM_σ²)
+        # Kenward-Roger implementation
+        β = m.β
+        p = length(β)
+        y = m.y
+        X = m.X
+        n = length(y)
+        Φ = m.vcov
+
+        nθs = [length(sigmas) for sigmas in m.sigmas]
+        k(b, r, c) = (nθs[b] * (c - 1) + r - sum(1:c))
+        σ²γ = [
+            if r == c
+                m.sigmas[b][r]^2
+            else
+                m.sigmarhos[b][2][k(b, r, c)] * m.sigmas[b][r] * m.sigmas[b][c]
+            end for (b, r, c) in m.parmap
+        ]
+        σ²s = [m.sigma^2, σ²γ...]
+        Zsγ = [
+            if r == c
+                m.reterms[b][:, r:length(m.sigmas[b]):end]
+            else
+                (
+                    m.reterms[b][:, c:length(m.sigmas[b]):end],
+                    m.reterms[b][:, r:length(m.sigmas[b]):end],
+                )
+            end for (b, r, c) in m.parmap
+        ]
+        Zs = [I(n), Zsγ...]
+        ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
+        V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
+        Vinv = inv(V)
+        P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
+        Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
+
+        W = vcov_varpar(m; FIM_σ²=FIM_σ²)
+
+        factor = zeros(size(m.vcov)...)
+        for i in eachindex(ZZs)
+            for j in eachindex(ZZs)
+                factor += W[i, j] * (Q[i, j] - P[i] * Φ * P[j])
+            end
+        end
+        varcovar_adjusted = Φ + 2 * Φ * factor * Φ
+        error_adjusted = sqrt.(diag(varcovar_adjusted))
+
+        v = zeros(p)
+        for k in eachindex(β)
+            c = 1
+            C = zeros(p, c)
+            C[k, 1] = 1
+            M = C * inv(C' * Φ * C) * C'
+            A1 = 0.0
+            A2 = 0.0
+            for i in eachindex(σ²s)
+                for j in eachindex(σ²s)
+                    A1 += W[i, j] * tr(M * Φ * P[i] * Φ) * tr(M * Φ * P[j] * Φ)
+                    A2 += W[i, j] * tr(M * Φ * P[i] * Φ * M * Φ * P[j] * Φ)
+                end
+            end
+            B = (A1 + 6A2) / (2c)
+            g = ((c + 1)A1 - (c + 4)A2) / ((c + 2)A2)
+            c1 = g / (3c + 2(1 - g))
+            c2 = (c - g) / (3c + 2(1 - g))
+            c3 = (c + 2 - g) / (3c + 2(1 - g))
+            Estar = inv(1 - A2 / c)
+            Vstar = (2 / c) * (1 + c1 * B) / ((1 - c2 * B)^2 * (1 - c3 * B))
+            ρ = Vstar / (2 * Estar^2)
+            v[k] = 4 + (c + 2) / (c * ρ - 1)
+            #λ = v / (Estar * (v - 2))
+        end
+        return LinearMixedModelKR(m, varcovar_adjusted, W, P, Q, v)
+
     elseif method isa Satterthwaite
-        return adjust_SW(m; FIM_σ²=FIM_σ²)
+        # Satterthwaite implementation
+        β = m.β
+        p = length(β)
+        y = m.y
+        X = m.X
+        n = length(y)
+        Φ = m.vcov
+
+        nθs = [length(sigmas) for sigmas in m.sigmas]
+        k(b, r, c) = (nθs[b] * (c - 1) + r - sum(1:c))
+        σ²γ = [
+            if r == c
+                m.sigmas[b][r]^2
+            else
+                m.sigmarhos[b][2][k(b, r, c)] * m.sigmas[b][r] * m.sigmas[b][c]
+            end for (b, r, c) in m.parmap
+        ]
+        σ²s = [m.sigma^2, σ²γ...]
+        Zsγ = [
+            if r == c
+                m.reterms[b][:, r:length(m.sigmas[b]):end]
+            else
+                (
+                    m.reterms[b][:, c:length(m.sigmas[b]):end],
+                    m.reterms[b][:, r:length(m.sigmas[b]):end],
+                )
+            end for (b, r, c) in m.parmap
+        ]
+        Zs = [I(n), Zsγ...]
+        ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
+        V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
+        Vinv = inv(V)
+
+        W = vcov_varpar(m; FIM_σ²=FIM_σ²)
+        v = zeros(p)
+        for k in eachindex(β)
+            c = 1
+            C = zeros(p, c)
+            C[k, 1] = 1
+            grad = [first(C' * Φ * X' * Vinv * ZZ * Vinv * X * Φ * C) for ZZ in ZZs]
+            v[k] = 2 * (first(C' * inv(X' * inv(V) * X) * C))^2 / (grad' * W * grad)
+        end
+        return LinearMixedModelSW(m, W, v)
+
     else
         error("Unsupported method: $(typeof(method))")
     end

@@ -12,6 +12,9 @@ using SafeTestsets
         using MixedModelsSmallSample
         JET.test_package(MixedModelsSmallSample; target_defined_modules=true)
     end
+    @safetestset "adjust interface" begin
+        include("adjust_interface_basic.jl")
+    end
     @safetestset "blocked experiment" begin
         include("blocked experiment.jl")
     end

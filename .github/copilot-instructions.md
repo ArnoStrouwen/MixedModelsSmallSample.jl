@@ -42,7 +42,7 @@ julia -e 'using JuliaFormatter; format("."; verbose=true)'
 
   - **Expected time: 2-3 seconds**
   - **NEVER CANCEL**: This is a quick operation
-  
+
 ### Testing Limitations
 
 **CRITICAL**: Full package tests cannot run in environments with network restrictions because:
@@ -94,4 +94,3 @@ git commit -m "Your descriptive commit message"
 ```
 
 ## Common Tasks
-

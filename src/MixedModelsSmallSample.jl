@@ -10,11 +10,23 @@ using Markdown
 
 export adjust_KR
 export adjust_SW
+export adjust
+
+export KenwardRoger
+export Satterthwaite
+export AbstractLMMSS
 
 export vcov_varpar
 
 export ftest_KR
 export ftest_SW
+
+# Abstract type for adjustment methods
+abstract type AbstractLMMSS end
+
+# Concrete method types
+struct KenwardRoger <: AbstractLMMSS end
+struct Satterthwaite <: AbstractLMMSS end
 
 struct LinearMixedModelKR{Float64} <: MixedModel{Float64}
     m::LinearMixedModel{Float64}
@@ -228,6 +240,17 @@ function adjust_SW(m::MixedModel; FIM_σ²=:observed)
         v[k] = 2 * (first(C' * inv(X' * inv(V) * X) * C))^2 / (grad' * W * grad)
     end
     return LinearMixedModelSW(m, W, v)
+end
+
+# Unified adjust function with method dispatch
+function adjust(m::MixedModel; method::AbstractLMMSS=KenwardRoger(), FIM_σ²=:observed)
+    if method isa KenwardRoger
+        return adjust_KR(m; FIM_σ²=FIM_σ²)
+    elseif method isa Satterthwaite
+        return adjust_SW(m; FIM_σ²=FIM_σ²)
+    else
+        error("Unsupported method: $(typeof(method))")
+    end
 end
 
 function ftest_SW(m::LinearMixedModel, L; FIM_σ²=:observed)

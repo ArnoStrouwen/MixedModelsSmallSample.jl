@@ -13,19 +13,19 @@ rename!(df, "Subplots" => :SP)
 fm = @formula(
     Y ~
         1 +
-        (1 | WP) +
-        (1 | SP) +
-        X1 +
-        X2 +
-        X3 +
-        X4 +
-        X5 +
-        X6 +
-        (X2 + X3 + X4 + X5 + X6) & (X1) +
-        (X3 + X4 + X5 + X6) & (X2) +
-        (X4 + X5 + X6) & (X3) +
-        (X5 + X6) & (X4) +
-        (X6) & (X5)
+    (1 | WP) +
+    (1 | SP) +
+    X1 +
+    X2 +
+    X3 +
+    X4 +
+    X5 +
+    X6 +
+    (X2 + X3 + X4 + X5 + X6) & (X1) +
+    (X3 + X4 + X5 + X6) & (X2) +
+    (X4 + X5 + X6) & (X3) +
+    (X5 + X6) & (X4) +
+    (X6) & (X5)
 )
 m = fit(MixedModel, fm, df; REML=true)
 kr = adjust_KR(m; FIM_σ²=:observed_SAS_MATCHING)

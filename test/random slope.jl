@@ -105,3 +105,28 @@ res = DataFrame(CSV.File("results/Results sleep study some corr quadratic sas sw
 @test isapprox(res[!, "Estimate"], sw.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sw.m.stderror, atol=1e-5, rtol=1e-4)
 @test isapprox(res[!, "DF"], sw.v, atol=1e-10, rtol=1.0e-3)
+
+# Test new unified adjust interface
+df = DataFrame(MixedModels.dataset(:sleepstudy))
+fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj))
+m = fit(MixedModel, fm, df; REML=true)
+
+# Test default method (should be KenwardRoger)
+result_default = adjust(m)
+@test result_default isa LinearMixedModelKR
+
+# Test explicit KenwardRoger method  
+result_kr = adjust(m; method=KenwardRoger())
+@test result_kr isa LinearMixedModelKR
+@test result_kr.m === m  # should contain original model
+
+# Test Satterthwaite method
+result_sw = adjust(m; method=Satterthwaite())
+@test result_sw isa LinearMixedModelSW
+@test result_sw.m === m  # should contain original model
+
+# Test that results are equivalent to original functions
+kr_old = adjust_KR(m)
+sw_old = adjust_SW(m)
+@test result_kr.varcovar_adjusted ≈ kr_old.varcovar_adjusted
+@test result_sw.v ≈ sw_old.v

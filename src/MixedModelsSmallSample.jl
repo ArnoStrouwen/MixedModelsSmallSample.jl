@@ -16,6 +16,9 @@ export KenwardRoger
 export Satterthwaite
 export AbstractLMMSS
 
+export LinearMixedModelKR
+export LinearMixedModelSW
+
 export vcov_varpar
 
 export ftest_KR

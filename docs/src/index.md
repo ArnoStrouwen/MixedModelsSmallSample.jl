@@ -156,7 +156,25 @@ have similar degrees of freedom as terms only involving easy-to-change factors.
 
 ```@example split_plot
 using MixedModelsSmallSample
-kr = adjust_KR(m; FIM_σ²=:expected)
+# New unified interface - KenwardRoger is the default method
+kr = adjust(m; FIM_σ²=:expected)
+```
+
+You can also specify the method explicitly:
+
+```@example split_plot
+# Explicit KenwardRoger method
+kr = adjust(m; method=KenwardRoger(), FIM_σ²=:expected)
+# Satterthwaite method
+sw = adjust(m; method=Satterthwaite(), FIM_σ²=:expected)
+```
+
+For backward compatibility, the original functions are still available:
+
+```@example split_plot
+# Original interface (still supported)
+kr_old = adjust_KR(m; FIM_σ²=:expected)
+sw_old = adjust_SW(m; FIM_σ²=:expected)
 ```
 
 The standard errors on the estimates are also slightly different.
@@ -178,7 +196,19 @@ m = fit(MixedModel, fm, df; REML=true)
 ```
 
 ```@example slope
-kr = adjust_KR(m; FIM_σ²=:expected) # :expected or :observed
+# New unified interface with default KenwardRoger method
+kr = adjust(m; FIM_σ²=:expected) # :expected or :observed
+
+# Or explicitly specify the method:
+kr = adjust(m; method=KenwardRoger(), FIM_σ²=:expected)
+sw = adjust(m; method=Satterthwaite(), FIM_σ²=:expected)
+```
+
+The original function-based interface remains available for backward compatibility:
+
+```@example slope
+# Original interface (still supported)
+kr_old = adjust_KR(m; FIM_σ²=:expected) # :expected or :observed
 ```
 
 ## Mathematical details

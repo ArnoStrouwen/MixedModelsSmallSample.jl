@@ -1,7 +1,7 @@
 name = "MixedModelsSmallSample"
 uuid = "fb531da0-582c-4a62-80cc-836e12ba9c31"
-authors = ["Arno Strouwen", "José Núñez Ares"]
 version = "0.0.1"
+authors = ["Arno Strouwen", "José Núñez Ares"]
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
@@ -15,7 +15,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Distributions = "0.25.49"
 LinearAlgebra = "1.10"
 Markdown = "1.10.0"
-MixedModels = "4.22"
+MixedModels = "4.22, 5"
 StatsAPI = "1.5"
 StatsBase = "0.33.15, 0.44, 0.34"
 julia = "1.10"

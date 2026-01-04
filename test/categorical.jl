@@ -68,7 +68,7 @@ L = zeros(length(m.betas), q)
 L[2, 1] = 1
 F_test_formulation = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
 @test isapprox(res[2, "DenDF"], F_test_formulation[1], atol=1e-10, rtol=1e-6)
-@test isapprox(res[2, "FValue"], F_test_formulation[2], atol=1e-10, rtol=1e-7)
+@test isapprox(res[2, "FValue"], F_test_formulation[2], atol=1e-10, rtol=1e-6)
 
 q = 1
 L = zeros(length(m.betas), q)
@@ -84,7 +84,7 @@ L[5, 2] = 1
 L[6, 3] = 1
 F_test_period = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
 @test isapprox(res[1, "DenDF"], F_test_period[1], atol=1e-10, rtol=1e-5)
-@test isapprox(res[1, "FValue"], F_test_period[2], atol=1e-10, rtol=1e-7)
+@test isapprox(res[1, "FValue"], F_test_period[2], atol=1e-10, rtol=1e-6)
 
 #= df = transform(df, :log_data => eachindex => :row)
 

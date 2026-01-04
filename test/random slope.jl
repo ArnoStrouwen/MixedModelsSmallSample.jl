@@ -1,10 +1,10 @@
 using CSV
 using DataFrames
-using MixedModels
 using Test
-using LinearAlgebra
 
 using MixedModelsSmallSample
+using MixedModelsSmallSample.MixedModels
+using MixedModelsSmallSample.LinearAlgebra: diag
 
 df = DataFrame(MixedModels.dataset(:sleepstudy))
 fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj))

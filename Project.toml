@@ -12,27 +12,10 @@ StatsAPI = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-Aqua = "0.8.9"
-CSV = "0.10"
-DataFrames = "1.5"
 Distributions = "0.25.49"
-JET = "0.9.12, 0.10"
 LinearAlgebra = "1.10"
 Markdown = "1.10.0"
 MixedModels = "4.22"
-SafeTestsets = "0.1"
 StatsAPI = "1.5"
 StatsBase = "0.33.15, 0.44, 0.34"
-Test = "1.10"
 julia = "1.10"
-
-[extras]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
-SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Aqua", "CSV", "DataFrames", "JET", "SafeTestsets", "Test"]

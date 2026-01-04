@@ -1,8 +1,8 @@
-using MixedModels
 using Test
 using DataFrames
 
 using MixedModelsSmallSample
+using MixedModelsSmallSample.MixedModels
 
 df = DataFrame(MixedModels.dataset(:sleepstudy))
 fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj))

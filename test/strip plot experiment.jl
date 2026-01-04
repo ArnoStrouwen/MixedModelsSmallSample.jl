@@ -1,10 +1,10 @@
 using CSV
 using DataFrames
-using MixedModels
 using Test
-using LinearAlgebra
 
 using MixedModelsSmallSample
+using MixedModelsSmallSample.MixedModels
+using MixedModelsSmallSample.LinearAlgebra: diag
 
 df = DataFrame(CSV.File("data/Data battery cell Chapter 11.csv"))
 rename!(df, "Whole Plots" => :WP)

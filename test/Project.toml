@@ -3,8 +3,12 @@ Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+MixedModelsSmallSample = "f99b4e67-2994-4e6c-be1a-7316e4f69432"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources.MixedModelsSmallSample]
+path = ".."
 
 [compat]
 Aqua = "0.8.9"

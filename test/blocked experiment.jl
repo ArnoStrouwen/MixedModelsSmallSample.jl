@@ -35,13 +35,11 @@ fm = @formula(
     SS & SS
 )
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m; FIM_σ²=:observed_SAS_MATCHING)
+kr = adjust_KR(m; FIM_σ²=:observed)
 
 res = DataFrame(CSV.File("results/Results pastry dough jmp.csv"))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-9, rtol=1e-9)
-@test isapprox(
-    res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-9, rtol=1e-8
-)
+@test isapprox(res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-9, rtol=1e-8)
 @test isapprox(res[!, "DFDen"], kr.v, atol=1e-10, rtol=1e-7)
 
 res = DataFrame(CSV.File("results/Results pastry dough sas kr.csv"))
@@ -49,7 +47,7 @@ res = DataFrame(CSV.File("results/Results pastry dough sas kr.csv"))
 @test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-9, rtol=1e-8)
 @test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=1e-7)
 
-sw = adjust_SW(m; FIM_σ²=:observed_SAS_MATCHING)
+sw = adjust_SW(m; FIM_σ²=:observed)
 
 res = DataFrame(CSV.File("results/Results pastry dough sas sw.csv"))
 @test isapprox(res[!, "Estimate"], sw.m.β, atol=1e-10, rtol=1e-10)

@@ -71,19 +71,7 @@ function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
     P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
     Q = [X' * Vinv * ZZi * Vinv * ZZj * Vinv * X for ZZi in ZZs, ZZj in ZZs]
     if FIM_σ² == :observed
-        Pvcov = Vinv - Vinv * X * Φ * X' * Vinv
-        FIMσ² = [
-            (
-                1 / 2 * tr(-Pvcov * ZZs[i] * Pvcov * ZZs[j]) -
-                1 / 2 *
-                (y - X * β)' *
-                Vinv *
-                (-2 * ZZs[i] * Vinv * ZZs[j]) *
-                Vinv *
-                (y - X * β)
-            ) for i in eachindex(σ²s), j in eachindex(σ²s)
-        ]
-    elseif FIM_σ² == :observed_SAS_MATCHING
+        # Profiled observed FIM (matching SAS) - accounts for β̂(θ) dependence
         Pvcov = Vinv - Vinv * X * Φ * X' * Vinv
         FIMσ² = [
             (
@@ -97,6 +85,7 @@ function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
             ) for i in eachindex(σ²s), j in eachindex(σ²s)
         ]
     elseif FIM_σ² == :expected
+        # Profiled expected FIM (matching lmertest) - accounts for β̂(θ) dependence
         FIMσ² = [
             1 / 2 * tr(Vinv * ZZs[i] * Vinv * ZZs[j]) - tr(Φ * Q[i, j]) +
             1 / 2 * tr(Φ * P[i] * Φ * P[j]) for i in eachindex(σ²s), j in eachindex(σ²s)

@@ -16,14 +16,14 @@ res = DataFrame(CSV.File("results/Results bioequivalence jmp.csv"))
 q = 1
 L = zeros(length(m.betas), q)
 L[2, 1] = 1
-F_test_formulation = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_formulation = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[1, "DFDen"], F_test_formulation[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[1, "F Ratio"], F_test_formulation[2], atol=1e-10, rtol=1e-4)
 
 q = 1
 L = zeros(length(m.betas), q)
 L[3, 1] = 1
-F_test_sequence = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_sequence = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[3, "DFDen"], F_test_sequence[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[3, "F Ratio"], F_test_sequence[2], atol=1e-10, rtol=1e-5)
 
@@ -32,7 +32,7 @@ L = zeros(length(m.betas), q)
 L[4, 1] = 1
 L[5, 2] = 1
 L[6, 3] = 1
-F_test_period = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_period = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[2, "DFDen"], F_test_period[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[2, "F Ratio"], F_test_period[2], atol=1e-10, rtol=1e-4)
 
@@ -41,14 +41,14 @@ res = DataFrame(CSV.File("results/Results bioequivalence homogeneous sas kr.csv"
 q = 1
 L = zeros(length(m.betas), q)
 L[2, 1] = 1
-F_test_formulation = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_formulation = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[2, "DenDF"], F_test_formulation[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[2, "FValue"], F_test_formulation[2], atol=1e-10, rtol=1e-4)
 
 q = 1
 L = zeros(length(m.betas), q)
 L[3, 1] = 1
-F_test_sequence = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_sequence = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[3, "DenDF"], F_test_sequence[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[3, "FValue"], F_test_sequence[2], atol=1e-10, rtol=1e-5)
 
@@ -57,7 +57,7 @@ L = zeros(length(m.betas), q)
 L[4, 1] = 1
 L[5, 2] = 1
 L[6, 3] = 1
-F_test_period = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_period = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[1, "DenDF"], F_test_period[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[1, "FValue"], F_test_period[2], atol=1e-10, rtol=1e-4)
 
@@ -66,14 +66,14 @@ res = DataFrame(CSV.File("results/Results bioequivalence homogeneous sas sw.csv"
 q = 1
 L = zeros(length(m.betas), q)
 L[2, 1] = 1
-F_test_formulation = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_formulation = ftest_SW(m, L; FIM_σ²=:observed)
 @test isapprox(res[2, "DenDF"], F_test_formulation[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[2, "FValue"], F_test_formulation[2], atol=1e-10, rtol=1e-6)
 
 q = 1
 L = zeros(length(m.betas), q)
 L[3, 1] = 1
-F_test_sequence = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_sequence = ftest_SW(m, L; FIM_σ²=:observed)
 @test isapprox(res[3, "DenDF"], F_test_sequence[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[3, "FValue"], F_test_sequence[2], atol=1e-10, rtol=1e-6)
 
@@ -82,7 +82,7 @@ L = zeros(length(m.betas), q)
 L[4, 1] = 1
 L[5, 2] = 1
 L[6, 3] = 1
-F_test_period = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_period = ftest_SW(m, L; FIM_σ²=:observed)
 @test isapprox(res[1, "DenDF"], F_test_period[1], atol=1e-10, rtol=1e-5)
 @test isapprox(res[1, "FValue"], F_test_period[2], atol=1e-10, rtol=1e-6)
 
@@ -96,14 +96,14 @@ res = DataFrame(CSV.File("results/Results bioequivalence heterogeneous sas kr.cs
 q = 1
 L = zeros(length(m.betas), q)
 L[2, 1] = 1
-F_test_formulation = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_formulation = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[2, "DenDF"], F_test_formulation[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[2, "FValue"], F_test_formulation[2], atol=1e-10, rtol=1e-4)
 
 q = 1
 L = zeros(length(m.betas), q)
 L[3, 1] = 1
-F_test_sequence = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_sequence = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[3, "DenDF"], F_test_sequence[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[3, "FValue"], F_test_sequence[2], atol=1e-10, rtol=1e-5)
 
@@ -112,7 +112,7 @@ L = zeros(length(m.betas), q)
 L[4, 1] = 1
 L[5, 2] = 1
 L[6, 3] = 1
-F_test_period = ftest_KR(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_period = ftest_KR(m, L; FIM_σ²=:observed)
 @test isapprox(res[1, "DenDF"], F_test_period[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[1, "FValue"], F_test_period[2], atol=1e-10, rtol=1e-4)
 
@@ -121,14 +121,14 @@ res = DataFrame(CSV.File("results/Results bioequivalence heterogeneous sas sw.cs
 q = 1
 L = zeros(length(m.betas), q)
 L[2, 1] = 1
-F_test_formulation = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_formulation = ftest_SW(m, L; FIM_σ²=:observed)
 @test isapprox(res[2, "DenDF"], F_test_formulation[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[2, "FValue"], F_test_formulation[2], atol=1e-10, rtol=1e-7)
 
 q = 1
 L = zeros(length(m.betas), q)
 L[3, 1] = 1
-F_test_sequence = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_sequence = ftest_SW(m, L; FIM_σ²=:observed)
 @test isapprox(res[3, "DenDF"], F_test_sequence[1], atol=1e-10, rtol=1e-6)
 @test isapprox(res[3, "FValue"], F_test_sequence[2], atol=1e-10, rtol=1e-6)
 
@@ -137,7 +137,7 @@ L = zeros(length(m.betas), q)
 L[4, 1] = 1
 L[5, 2] = 1
 L[6, 3] = 1
-F_test_period = ftest_SW(m, L; FIM_σ²=:observed_SAS_MATCHING)
+F_test_period = ftest_SW(m, L; FIM_σ²=:observed)
 @test isapprox(res[1, "DenDF"], F_test_period[1], atol=1e-10, rtol=1e-5)
 @test isapprox(res[1, "FValue"], F_test_period[2], atol=1e-10, rtol=1e-7)
  =#

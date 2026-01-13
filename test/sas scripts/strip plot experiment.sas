@@ -13,12 +13,10 @@ DATA WORK.BC;
     RENAME "SubPlots"n = SP;
 RUN;
 
-PROC CONTENTS DATA=WORK.BC; RUN;
-%web_open_table(WORK.BC);
-
 ODS OUTPUT
-    ParameterEstimates=PE;
-    
+    ParameterEstimates=PE_KR
+    AsyCov=MyAsyCov;
+
 PROC GLIMMIX DATA=WORK.BC ASYCOV;
 	CLASS WP SP;
     MODEL Y = 
@@ -32,21 +30,10 @@ PROC GLIMMIX DATA=WORK.BC ASYCOV;
     RANDOM INTERCEPT / SUBJECT=SP;
 RUN;
 
-DATA PE;
-    SET PE;
-    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
-RUN;
-
-PROC EXPORT DATA=PE
-    OUTFILE='/home/u64165441/Results battery cell sas kr.csv'
-    DBMS=CSV
-    REPLACE;
-RUN;
-
 ODS OUTPUT
-    ParameterEstimates=PE;
-    
-PROC GLIMMIX DATA=WORK.BC ASYCOV;
+    ParameterEstimates=PE_SW;
+
+PROC GLIMMIX DATA=WORK.BC;
 	CLASS WP SP;
     MODEL Y = 
         X1 X2 X3 X4 X5 X6
@@ -59,12 +46,34 @@ PROC GLIMMIX DATA=WORK.BC ASYCOV;
     RANDOM INTERCEPT / SUBJECT=SP;
 RUN;
 
-DATA PE;
-    SET PE;
-    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
+DATA PE_KR;
+    SET PE_KR;
+    FORMAT _NUMERIC_ BEST32.;
 RUN;
 
-PROC EXPORT DATA=PE
+DATA MyAsyCov;
+    SET MyAsyCov;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+DATA PE_SW;
+    SET PE_SW;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+PROC EXPORT DATA=PE_KR
+    OUTFILE='/home/u64165441/Results battery cell sas kr.csv'
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+PROC EXPORT DATA=MyAsyCov
+    OUTFILE='/home/u64165441/Results battery cell sas asycov.csv'
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+PROC EXPORT DATA=PE_SW
     OUTFILE='/home/u64165441/Results battery cell sas sw.csv'
     DBMS=CSV
     REPLACE;

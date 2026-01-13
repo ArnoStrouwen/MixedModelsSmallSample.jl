@@ -18,12 +18,11 @@ RUN;
 PROC STDIZE DATA=WORK.PD OUT=WORK.PD METHOD=RANGE MULT=2 ADD=-1;
 	var FR MC SS;
 RUN;
-PROC CONTENTS DATA=WORK.PD; RUN;
-%web_open_table(WORK.PD);
 
-ODS OUTPUT
-    ParameterEstimates=PE;
-    
+ODS OUTPUT 
+    AsyCov=MyAsyCov
+    ParameterEstimates=PE_KR;
+
 PROC GLIMMIX DATA=WORK.PD ASYCOV;
 	CLASS Day;
     MODEL LEI = 
@@ -32,24 +31,12 @@ PROC GLIMMIX DATA=WORK.PD ASYCOV;
         MC*SS
         FR*FR MC*MC SS*SS / DDFM=Kenwardroger SOLUTION;
     RANDOM INTERCEPT / SUBJECT=Day;
-
 RUN;
 
-DATA PE;
-    SET PE;
-    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
-RUN;
+ODS OUTPUT 
+    ParameterEstimates=PE_SW;
 
-PROC EXPORT DATA=PE
-    OUTFILE='/home/u64165441/Results pastry dough sas kr.csv'
-    DBMS=CSV
-    REPLACE;
-RUN;
-
-ODS OUTPUT
-    ParameterEstimates=PE;
-    
-PROC GLIMMIX DATA=WORK.PD ASYCOV;
+PROC GLIMMIX DATA=WORK.PD;
 	CLASS Day;
     MODEL LEI = 
         FR MC SS
@@ -57,16 +44,37 @@ PROC GLIMMIX DATA=WORK.PD ASYCOV;
         MC*SS
         FR*FR MC*MC SS*SS / DDFM=Satterthwaite SOLUTION;
     RANDOM INTERCEPT / SUBJECT=Day;
-
 RUN;
 
-DATA PE;
-    SET PE;
-    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
+DATA PE_KR;
+    SET PE_KR;
+    FORMAT _NUMERIC_ BEST32.;
 RUN;
 
-PROC EXPORT DATA=PE
-    OUTFILE='/home/u64165441/Results pastry dough sas sw.csv'
+DATA MyAsyCov;
+    SET MyAsyCov;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+DATA PE_SW;
+    SET PE_SW;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+PROC EXPORT DATA=MyAsyCov
+    OUTFILE="/home/u64165441/Results pastry dough sas asycov.csv"
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+PROC EXPORT DATA=PE_KR
+    OUTFILE="/home/u64165441/Results pastry dough sas kr.csv"
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+PROC EXPORT DATA=PE_SW
+    OUTFILE="/home/u64165441/Results pastry dough sas sw.csv"
     DBMS=CSV
     REPLACE;
 RUN;

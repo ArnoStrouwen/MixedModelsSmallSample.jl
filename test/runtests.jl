@@ -25,7 +25,7 @@ using SafeTestsets
         include("random slope.jl")
     end
     @safetestset "categorical" begin
-        include("categorical.jl")
+        include("bioequivalence homogeneous.jl")
     end
     @safetestset "varia" begin
         include("varia.jl")

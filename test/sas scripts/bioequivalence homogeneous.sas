@@ -1,76 +1,77 @@
-%web_drop_table(WORK.WT);
-FILENAME REFFILE '/home/u64165441/Data bioequivalence.csv';
-
-PROC IMPORT DATAFILE=REFFILE
-	DBMS=CSV
-	OUT=WORK.WT;
-	GETNAMES=YES;
-RUN;
-
 DATA WORK.WT;
-    SET WORK.WT;
+    INFILE '/home/u64165441/Data bioequivalence.csv' DLM=',' FIRSTOBS=2;
+    INPUT subject formulation $ period sequence $ log_data;
 RUN;
 
-PROC CONTENTS DATA=WORK.WT; RUN;
-%web_open_table(WORK.WT);
-
 ODS OUTPUT
-    Tests3=Tests3;
+    Tests3=Tests3_KR
+    ParameterEstimates=PE_KR
+    AsyCov=AsyCov;
+
 PROC GLIMMIX DATA=WORK.WT ASYCOV;
-	CLASS subject sequence period formulation ;
-    MODEL log_data = period formulation sequence / DDFM=kenwardroger SOLUTION;
+    CLASS subject sequence period formulation;
+    MODEL log_data = period formulation sequence / DDFM=KENWARDROGER SOLUTION;
     RANDOM INTERCEPT / SUBJECT=subject;
 RUN;
 
-DATA Tests3;
-    SET Tests3;
-    FORMAT DenDF FValue ProbF BEST12.10;
+DATA PE_KR;
+    SET PE_KR;
+    FORMAT _NUMERIC_ BEST32.;
 RUN;
 
-proc contents data=Tests3;
-run;
-
-PROC EXPORT DATA=Tests3
+PROC EXPORT DATA=PE_KR
     OUTFILE='/home/u64165441/Results bioequivalence homogeneous sas kr.csv'
-    DBMS=CSV
-    REPLACE;
+    DBMS=CSV REPLACE;
+RUN;
+
+DATA Tests3_KR;
+    SET Tests3_KR;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+PROC EXPORT DATA=Tests3_KR
+    OUTFILE='/home/u64165441/Results bioequivalence homogeneous sas tests3 kr.csv'
+    DBMS=CSV REPLACE;
+RUN;
+
+DATA AsyCov;
+    SET AsyCov;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+PROC EXPORT DATA=AsyCov
+    OUTFILE='/home/u64165441/Results bioequivalence homogeneous sas asycov.csv'
+    DBMS=CSV REPLACE;
 RUN;
 
 ODS OUTPUT
-    Tests3=Tests3;
-PROC GLIMMIX DATA=WORK.WT ASYCOV;
-	CLASS subject sequence period formulation ;
-    MODEL log_data = period formulation sequence / DDFM=satterthwaite SOLUTION;
+    Tests3=Tests3_SW
+    ParameterEstimates=PE_SW;
+
+PROC GLIMMIX DATA=WORK.WT;
+    CLASS subject sequence period formulation;
+    MODEL log_data = period formulation sequence / DDFM=SATTERTHWAITE SOLUTION;
     RANDOM INTERCEPT / SUBJECT=subject;
 RUN;
 
-DATA Tests3;
-    SET Tests3;
-    FORMAT DenDF FValue ProbF BEST12.10;
+DATA PE_SW;
+    SET PE_SW;
+    FORMAT _NUMERIC_ BEST32.;
 RUN;
 
-proc contents data=Tests3;
-run;
-
-PROC EXPORT DATA=Tests3
+PROC EXPORT DATA=PE_SW
     OUTFILE='/home/u64165441/Results bioequivalence homogeneous sas sw.csv'
-    DBMS=CSV
-    REPLACE;
+    DBMS=CSV REPLACE;
 RUN;
 
-PROC MIXED DATA=WORK.WT ASYCOV;
-	CLASS subject sequence(ref="ABAB") period(ref="1") formulation(ref="R");
-	MODEL log_data = sequence period formulation/ DDFM=SATTERTH SOLUTION;
-	RANDOM formulation/TYPE=FA0(2) SUB=subject G;
-	REPEATED/R=1,2,3,4,5,6,7,8, GRP=formulation;
+DATA Tests3_SW;
+    SET Tests3_SW;
+    FORMAT _NUMERIC_ BEST32.;
 RUN;
 
-PROC GLIMMIX DATA=WORK.WT ASYCOV outdesign(z)=zmatrix;
-	CLASS subject sequence(ref="ABAB") period(ref="1") formulation(ref="R");
-	MODEL log_data = sequence period formulation/ DDFM=SATTERTH SOLUTION;
-	RANDOM formulation/TYPE=FA0(2) SUB=subject G;
+PROC EXPORT DATA=Tests3_SW
+    OUTFILE='/home/u64165441/Results bioequivalence homogeneous sas tests3 sw.csv'
+    DBMS=CSV REPLACE;
 RUN;
 
-proc print data=zmatrix;
-run;
 

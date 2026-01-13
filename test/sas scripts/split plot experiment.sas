@@ -12,11 +12,9 @@ DATA WORK.WT;
     RENAME "Whole Plots"n = WP;
 RUN;
 
-PROC CONTENTS DATA=WORK.WT; RUN;
-%web_open_table(WORK.WT);
-
 ODS OUTPUT
-    ParameterEstimates=PE;
+    ParameterEstimates=PE_KR
+    AsyCov=MyAsyCov;
     
 PROC GLIMMIX DATA=WORK.WT ASYCOV;
 	CLASS WP;
@@ -30,21 +28,10 @@ PROC GLIMMIX DATA=WORK.WT ASYCOV;
     RANDOM INTERCEPT / SUBJECT=WP;
 RUN;
 
-DATA PE;
-    SET PE;
-    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
-RUN;
-
-PROC EXPORT DATA=PE
-    OUTFILE='/home/u64165441/Results wind tunnel sas kr.csv'
-    DBMS=CSV
-    REPLACE;
-RUN;
-
 ODS OUTPUT
-    ParameterEstimates=PE;
-    
-PROC GLIMMIX DATA=WORK.WT ASYCOV;
+    ParameterEstimates=PE_SW;
+
+PROC GLIMMIX DATA=WORK.WT;
 	CLASS WP;
     MODEL EFFICIENCY = 
         FRH RRH YA GC
@@ -56,12 +43,34 @@ PROC GLIMMIX DATA=WORK.WT ASYCOV;
     RANDOM INTERCEPT / SUBJECT=WP;
 RUN;
 
-DATA PE;
-    SET PE;
-    FORMAT Estimate StdErr DF tValue Probt BEST12.10;
+DATA PE_KR;
+    SET PE_KR;
+    FORMAT _NUMERIC_ BEST32.;
 RUN;
 
-PROC EXPORT DATA=PE
+DATA MyAsyCov;
+    SET MyAsyCov;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+DATA PE_SW;
+    SET PE_SW;
+    FORMAT _NUMERIC_ BEST32.;
+RUN;
+
+PROC EXPORT DATA=PE_KR
+    OUTFILE='/home/u64165441/Results wind tunnel sas kr.csv'
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+PROC EXPORT DATA=MyAsyCov
+    OUTFILE='/home/u64165441/Results wind tunnel sas asycov.csv'
+    DBMS=CSV
+    REPLACE;
+RUN;
+
+PROC EXPORT DATA=PE_SW
     OUTFILE='/home/u64165441/Results wind tunnel sas sw.csv'
     DBMS=CSV
     REPLACE;

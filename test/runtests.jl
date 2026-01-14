@@ -30,4 +30,7 @@ using SafeTestsets
     @safetestset "varia" begin
         include("varia.jl")
     end
+    @safetestset "random slope FA0" begin
+        include("random slope FA0.jl")
+    end
 end

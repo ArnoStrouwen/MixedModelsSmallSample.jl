@@ -1,0 +1,6 @@
+CovParm,Subject,Group,Estimate
+"FA(1,1)",subject,,0.8529944996535
+"FA(2,1)",subject,,0.82840655479889
+"FA(2,2)",subject,,7.0176288304859E-19
+Residual,subject,formulation R,0.20211804636322
+Residual,subject,formulation T,0.11739413358478

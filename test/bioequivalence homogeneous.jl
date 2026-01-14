@@ -22,7 +22,7 @@ m = fit(
     ),
 )
 
-kr = adjust_KR(m; FIM_σ²=:observed)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ObservedFIM()))
 
 res_pe = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results bioequivalence homogeneous sas kr.csv"))
@@ -30,7 +30,7 @@ res_pe = DataFrame(
 
 julia_coefs = coef(m)
 julia_se = stderror(m)
-julia_dof = kr.v
+julia_dof = kr.ν
 
 row_int = findfirst(r -> r["Effect"] == "Intercept", eachrow(res_pe))
 @test isapprox(res_pe[row_int, "Estimate"], julia_coefs[1], atol=1e-5)
@@ -72,7 +72,7 @@ res_tests = DataFrame(
 q = 1
 L = zeros(length(m.betas), q)
 L[2, 1] = 1
-F_test_formulation = ftest_KR(m, L; FIM_σ²=:observed)
+F_test_formulation = small_sample_ftest(m, L; method=KenwardRoger(; fim=ObservedFIM()))
 row_form = findfirst(==("formulation"), res_tests[!, "Effect"])
 @test isapprox(res_tests[row_form, "DenDF"], F_test_formulation[1], atol=1e-10, rtol=1e-5)
 @test isapprox(res_tests[row_form, "FValue"], F_test_formulation[2], atol=1e-10, rtol=1e-4)
@@ -80,7 +80,7 @@ row_form = findfirst(==("formulation"), res_tests[!, "Effect"])
 q = 1
 L = zeros(length(m.betas), q)
 L[3, 1] = 1
-F_test_sequence = ftest_KR(m, L; FIM_σ²=:observed)
+F_test_sequence = small_sample_ftest(m, L; method=KenwardRoger(; fim=ObservedFIM()))
 row_seq = findfirst(==("sequence"), res_tests[!, "Effect"])
 @test isapprox(res_tests[row_seq, "DenDF"], F_test_sequence[1], atol=1e-10, rtol=1e-5)
 @test isapprox(res_tests[row_seq, "FValue"], F_test_sequence[2], atol=1e-10, rtol=1e-5)
@@ -90,7 +90,7 @@ L = zeros(length(m.betas), q)
 L[4, 1] = 1
 L[5, 2] = 1
 L[6, 3] = 1
-F_test_period = ftest_KR(m, L; FIM_σ²=:observed)
+F_test_period = small_sample_ftest(m, L; method=KenwardRoger(; fim=ObservedFIM()))
 row_per = findfirst(==("period"), res_tests[!, "Effect"])
 @test isapprox(res_tests[row_per, "NumDF"], q, atol=1e-10)
 @test isapprox(res_tests[row_per, "DenDF"], F_test_period[1], atol=1e-10, rtol=1e-5)
@@ -101,7 +101,7 @@ sas_asycov_df = DataFrame(
         joinpath(@__DIR__, "results", "Results bioequivalence homogeneous sas asycov.csv")
     ),
 )
-W = MixedModelsSmallSample.vcov_varpar(m; FIM_σ²=:observed)
+W = vcov_varpar(m; fim=ObservedFIM())
 row_res = findfirst(==("Residual"), sas_asycov_df[!, "CovParm"])
 row_int = findfirst(x -> x == "Intercept", sas_asycov_df[!, "CovParm"])
 
@@ -114,7 +114,7 @@ for (i, r) in enumerate(inds)
 end
 @test isapprox(W, sas_matrix, rtol=1e-4)
 
-sw = adjust_SW(m; FIM_σ²=:observed)
+sw = small_sample_adjust(m, Satterthwaite(; fim=ObservedFIM()))
 
 res_tests_sw = DataFrame(
     CSV.File(
@@ -130,7 +130,7 @@ res_tests_sw = DataFrame(
 q = 1
 L = zeros(length(m.betas), q)
 L[2, 1] = 1
-F_test_formulation = ftest_SW(m, L; FIM_σ²=:observed)
+F_test_formulation = small_sample_ftest(m, L; method=Satterthwaite(; fim=ObservedFIM()))
 row_form = findfirst(==("formulation"), res_tests_sw[!, "Effect"])
 @test isapprox(
     res_tests_sw[row_form, "DenDF"], F_test_formulation[1], atol=1e-10, rtol=1e-5
@@ -142,7 +142,7 @@ row_form = findfirst(==("formulation"), res_tests_sw[!, "Effect"])
 q = 1
 L = zeros(length(m.betas), q)
 L[3, 1] = 1
-F_test_sequence = ftest_SW(m, L; FIM_σ²=:observed)
+F_test_sequence = small_sample_ftest(m, L; method=Satterthwaite(; fim=ObservedFIM()))
 row_seq = findfirst(==("sequence"), res_tests_sw[!, "Effect"])
 @test isapprox(res_tests_sw[row_seq, "DenDF"], F_test_sequence[1], atol=1e-10, rtol=1e-5)
 @test isapprox(res_tests_sw[row_seq, "FValue"], F_test_sequence[2], atol=1e-10, rtol=1e-6)
@@ -152,7 +152,7 @@ L = zeros(length(m.betas), q)
 L[4, 1] = 1
 L[5, 2] = 1
 L[6, 3] = 1
-F_test_period = ftest_SW(m, L; FIM_σ²=:observed)
+F_test_period = small_sample_ftest(m, L; method=Satterthwaite(; fim=ObservedFIM()))
 row_per = findfirst(==("period"), res_tests_sw[!, "Effect"])
 @test isapprox(res_tests_sw[row_per, "DenDF"], F_test_period[1], atol=1e-10, rtol=1e-5)
 @test isapprox(res_tests_sw[row_per, "FValue"], F_test_period[2], atol=1e-10, rtol=1e-6)

@@ -9,28 +9,28 @@ using MixedModelsSmallSample.LinearAlgebra: diag
 df = DataFrame(MixedModels.dataset(:sleepstudy))
 fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj))
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m; FIM_σ²=:observed)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ObservedFIM()))
 
 res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results sleep study jmp.csv")))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(
     res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-10, rtol=1e-6
 )
-@test isapprox(res[!, "DFDen"], kr.v, atol=1e-10, rtol=1e-5)
+@test isapprox(res[!, "DFDen"], kr.ν, atol=1e-10, rtol=1e-5)
 
 res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results sleep study sas kr.csv")))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-5, rtol=1e-10)
-@test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=1e-5)
+@test isapprox(res[!, "DF"], kr.ν, atol=1e-10, rtol=1e-5)
 
-sw = adjust_SW(m; FIM_σ²=:observed)
+sw = small_sample_adjust(m, Satterthwaite(; fim=ObservedFIM()))
 
 res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results sleep study sas sw.csv")))
 @test isapprox(res[!, "Estimate"], sw.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sw.m.stderror, atol=1e-5, rtol=1e-10)
-@test isapprox(res[!, "DF"], sw.v, atol=1e-10, rtol=1e-5)
+@test isapprox(res[!, "DF"], sw.ν, atol=1e-10, rtol=1e-5)
 
-kr = adjust_KR(m; FIM_σ²=:expected)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ExpectedFIM()))
 
 res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results sleep study lmertest.csv")))
 @test isapprox(res[!, "coefficients.Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
@@ -40,12 +40,12 @@ res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results sleep study lmer
     atol=1e-10,
     rtol=1e-6,
 )
-@test isapprox(res[!, "coefficients.df"], kr.v, atol=1e-10, rtol=1e-6)
+@test isapprox(res[!, "coefficients.df"], kr.ν, atol=1e-10, rtol=1e-6)
 
 sas_asycov_df = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study sas asycov.csv"))
 )
-W = MixedModelsSmallSample.vcov_varpar(m; FIM_σ²=:observed)
+W = vcov_varpar(m; fim=ObservedFIM())
 
 row_residual_idx = findfirst(r -> r == "Residual", sas_asycov_df[!, "CovParm"])
 row_int_idx = findfirst(
@@ -74,19 +74,19 @@ sas_matrix[3, 3] = sas_asycov_df[row_days_idx, "CovP" * string(row_days_idx)]
 
 fm = @formula(reaction ~ 1 + days + (1 + days | subj))
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m; FIM_σ²=:observed)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ObservedFIM()))
 
 res = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study corr sas kr.csv"))
 )
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-10, rtol=1e-5)
-@test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=1e-4)
+@test isapprox(res[!, "DF"], kr.ν, atol=1e-10, rtol=1e-4)
 
 sas_asycov_df = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study corr sas asycov.csv"))
 )
-W = MixedModelsSmallSample.vcov_varpar(m; FIM_σ²=:observed)
+W = vcov_varpar(m; fim=ObservedFIM())
 sas_names = sas_asycov_df[!, "CovParm"]
 row_res = findfirst(==("Residual"), sas_names)
 row_11 = findfirst(x -> occursin("UN(1,1)", x), sas_names)
@@ -107,30 +107,30 @@ for (i, r) in enumerate(inds)
 end
 @test isapprox(W, sas_matrix, rtol=5e-4)
 
-sw = adjust_SW(m; FIM_σ²=:observed)
+sw = small_sample_adjust(m, Satterthwaite(; fim=ObservedFIM()))
 
 res = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study corr sas sw.csv"))
 )
 @test isapprox(res[!, "Estimate"], sw.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sw.m.stderror, atol=1e-5, rtol=1e-5)
-@test isapprox(res[!, "DF"], sw.v, atol=1e-10, rtol=1e-4)
+@test isapprox(res[!, "DF"], sw.ν, atol=1e-10, rtol=1e-4)
 
 fm = @formula(reaction ~ 1 + days + days^2 + zerocorr(1 + days + days^2 | subj))
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m; FIM_σ²=:observed)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ObservedFIM()))
 
 res = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study quadratic sas kr.csv"))
 )
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-10, rtol=1e-4)
-@test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=0.5e-3)
+@test isapprox(res[!, "DF"], kr.ν, atol=1e-10, rtol=0.5e-3)
 
 sas_asycov_df = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study quadratic sas asycov.csv"))
 )
-W = MixedModelsSmallSample.vcov_varpar(m; FIM_σ²=:observed)
+W = vcov_varpar(m; fim=ObservedFIM())
 row_res = findfirst(==("Residual"), sas_asycov_df[!, "CovParm"])
 row_int = findfirst(x -> x == "Intercept", sas_asycov_df[!, "CovParm"])
 row_d = findfirst(x -> x == "days", sas_asycov_df[!, "CovParm"])
@@ -152,32 +152,32 @@ for (i, r) in enumerate(inds)
 end
 @test isapprox(W, sas_matrix, rtol=3e-4)
 
-sw = adjust_SW(m; FIM_σ²=:observed)
+sw = small_sample_adjust(m, Satterthwaite(; fim=ObservedFIM()))
 
 res = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study quadratic sas sw.csv"))
 )
 @test isapprox(res[!, "Estimate"], sw.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sw.m.stderror, atol=1e-10, rtol=1e-4)
-@test isapprox(res[!, "DF"], sw.v, atol=1e-10, rtol=0.5e-3)
+@test isapprox(res[!, "DF"], sw.ν, atol=1e-10, rtol=0.5e-3)
 
 fm = @formula(reaction ~ 1 + days + days^2 + (1 + days + days^2 | subj))
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m; FIM_σ²=:observed)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ObservedFIM()))
 
 res = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study corr quadratic sas kr.csv"))
 )
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-10, rtol=0.5e-3)
-@test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=1.5e-3)
+@test isapprox(res[!, "DF"], kr.ν, atol=1e-10, rtol=1.5e-3)
 
 sas_asycov_df = DataFrame(
     CSV.File(
         joinpath(@__DIR__, "results", "Results sleep study corr quadratic sas asycov.csv")
     ),
 )
-W = MixedModelsSmallSample.vcov_varpar(m; FIM_σ²=:observed)
+W = vcov_varpar(m; fim=ObservedFIM())
 sas_names = sas_asycov_df[!, "CovParm"]
 row_res = findfirst(==("Residual"), sas_names)
 row_11 = findfirst(x -> occursin("UN(1,1)", x), sas_names)
@@ -204,18 +204,18 @@ for (i, r) in enumerate(inds)
 end
 @test isapprox(W, sas_matrix, rtol=3e-3)
 
-sw = adjust_SW(m; FIM_σ²=:observed)
+sw = small_sample_adjust(m, Satterthwaite(; fim=ObservedFIM()))
 
 res = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results sleep study corr quadratic sas sw.csv"))
 )
 @test isapprox(res[!, "Estimate"], sw.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sw.m.stderror, atol=1e-10, rtol=0.5e-3)
-@test isapprox(res[!, "DF"], sw.v, atol=1e-10, rtol=1.5e-3)
+@test isapprox(res[!, "DF"], sw.ν, atol=1e-10, rtol=1.5e-3)
 
 fm = @formula(reaction ~ 1 + days + days^2 + (1 | subj) + (days + days^2 | subj))
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m; FIM_σ²=:observed)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ObservedFIM()))
 
 res = DataFrame(
     CSV.File(
@@ -224,7 +224,7 @@ res = DataFrame(
 )
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-10, rtol=1e-4)
-@test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=1.0e-3)
+@test isapprox(res[!, "DF"], kr.ν, atol=1e-10, rtol=1.0e-3)
 
 sas_asycov_df = DataFrame(
     CSV.File(
@@ -233,7 +233,7 @@ sas_asycov_df = DataFrame(
         ),
     ),
 )
-W = MixedModelsSmallSample.vcov_varpar(m; FIM_σ²=:observed)
+W = vcov_varpar(m; fim=ObservedFIM())
 sas_names = sas_asycov_df[!, "CovParm"]
 row_res = findfirst(==("Residual"), sas_names)
 row_int = findfirst(

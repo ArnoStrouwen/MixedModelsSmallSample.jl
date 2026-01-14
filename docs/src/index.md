@@ -2,18 +2,9 @@
 CurrentModule = MixedModelsSmallSample
 ```
 
-# MixedModelsSmallSample
-
-The confidence intervals and hypothesis tests for the fixed effects in
-[MixedModels.jl](https://juliastats.org/MixedModels.jl/stable/)
-are based on large sample approximations.
-This package implements small sample corrections for these intervals and tests, as described in:
-
-> Kenward, Michael G., and James H. Roger. "Small sample inference for fixed effects from restricted maximum likelihood." Biometrics (1997): 983-997,
-
-and in:
-
-> Hrong-Tai Fai, Alex, and Paul L. Cornelius. "Approximate F-tests of multiple degree of freedom hypotheses in generalized least squares analyses of unbalanced split-plot experiments." Journal of statistical computation and simulation 54.4 (1996): 363-378.
+```@docs
+MixedModelsSmallSample
+```
 
 ## Getting Started
 
@@ -156,7 +147,7 @@ have similar degrees of freedom as terms only involving easy-to-change factors.
 
 ```@example split_plot
 using MixedModelsSmallSample
-kr = adjust_KR(m; FIM_σ²=:expected)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ExpectedFIM()))
 ```
 
 The standard errors on the estimates are also slightly different.
@@ -173,36 +164,26 @@ using MixedModels
 using MixedModelsSmallSample
 
 df = DataFrame(MixedModels.dataset(:sleepstudy))
-fm = @formula(reaction ~ 1 + days + zerocorr(1 + days | subj)) # zerocorr is necessary
+fm = @formula(reaction ~ 1 + days + (1 + days | subj))
 m = fit(MixedModel, fm, df; REML=true)
 ```
 
 ```@example slope
-kr = adjust_KR(m; FIM_σ²=:expected) # :expected or :observed
+kr = small_sample_adjust(m, KenwardRoger(; fim=ExpectedFIM())) # or ObservedFIM()
 ```
-
-## Mathematical details
-
-To quantify the uncertainty on the estimates of the variance components,
-either the observed or the expected Fisher information matrix can be used,
-by passing `:expected` or `:observed` to the keyword argument `FIM_σ²`.
-Observed is the default option.
-
-## Limitations
-
-Currently, correlated random effects are not supported.
-In the above example the `zerocorr` is necessary.
 
 ## More examples
 
-### Random intercept
+### Scalar Random Effects
 
+  - [Bioequivalence (Homogeneous)](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/bioequivalence%20homogeneous.jl)
   - [Blocked experiment](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/blocked%20experiment.jl)
   - [Split-plot experiment](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/split%20plot%20experiment.jl)
   - [Strip-plot experiment](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/strip%20plot%20experiment.jl)
 
-### Random intercept and main effects
+### Vector Random Effects
 
+  - [Bioequivalence (Intermediate)](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/bioequivalence%20intermediate.jl)
   - [Single random slope](https://github.com/ArnoStrouwen/MixedModelsSmallSample.jl/blob/master/test/random%20slope.jl)
 
 ## Similar software
@@ -211,8 +192,66 @@ In the above example the `zerocorr` is necessary.
   - [JMP](https://www.jmp.com/support/help/en/18.1/index.shtml#page/jmp/statistical-details-for-the-kackarharville-correction-2.shtml#)
   - [SAS](https://documentation.sas.com/doc/en/statcdc/14.2/statug/statug_glimmix_details40.htm)
 
-## API
+## How It Works
 
-```@autodocs
-Modules = [MixedModelsSmallSample]
+The computations follow the same high-level flow for both Kenward-Roger and Satterthwaite:
+
+ 1. Compute ``V(\theta)``, ``V(\theta)^{-1}``, and derivative matrices for either [`Unstructured`](@ref) or [`FactorAnalytic`](@ref).
+ 2. Compute `W = I(θ)^{-1}` via [`vcov_varpar`](@ref), using either [`ObservedFIM`](@ref) or [`ExpectedFIM`](@ref).
+ 3. For [`KenwardRoger`](@ref), compute the bias-corrected covariance of `β` (see [`MixedModelsSmallSample.compute_adjusted_covariance`](@ref)).
+ 4. Compute denominator degrees of freedom and (for KR) the F-scaling factor (see [`MixedModelsSmallSample.compute_dof`](@ref)).
+
+## API Reference
+
+### Main Functions
+
+```@docs
+small_sample_adjust
+small_sample_ftest
+vcov_varpar
+```
+
+### Adjustment Methods
+
+```@docs
+KenwardRoger
+Satterthwaite
+```
+
+### Options
+
+```@docs
+ObservedFIM
+ExpectedFIM
+Unstructured
+FactorAnalytic
+```
+
+### Result Types
+
+```@docs
+LinearMixedModelAdjusted
+```
+
+## Internals
+
+These types and functions are not exported but may be useful for understanding
+or extending the package.
+
+### Variance Decomposition
+
+```@docs
+VarianceDecomposition
+```
+
+### Covariance Adjustment Computation
+
+```@docs
+MixedModelsSmallSample.compute_adjusted_covariance
+```
+
+### Degrees of Freedom Computation
+
+```@docs
+MixedModelsSmallSample.compute_dof
 ```

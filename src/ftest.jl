@@ -49,7 +49,7 @@ small_sample_ftest(m_adj, L)
 ```
 
 # Arguments
-- `m`: A fitted `MixedModel` (must use REML)
+ - `m`: A fitted `MixedModel` (must use REML for KR; ML or REML for SW)
 - `L`: Contrast matrix
 - `method`: [`KenwardRoger`](@ref) or [`Satterthwaite`](@ref)
 """

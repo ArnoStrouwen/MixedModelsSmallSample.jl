@@ -1,6 +1,6 @@
 name = "MixedModelsSmallSample"
 uuid = "fb531da0-582c-4a62-80cc-836e12ba9c31"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Arno Strouwen", "José Núñez Ares"]
 
 [deps]

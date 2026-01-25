@@ -83,7 +83,7 @@ This implies the ``R_{ij}`` terms used by the Kenward-Roger covariance correctio
 struct Unstructured <: AbstractParameterization end
 
 """
-    FactorAnalytic
+    FactorAnalytic(; fa0_tol=2e-3)
 
 Factor analytic (Cholesky) parameterization.
 
@@ -99,6 +99,15 @@ V = \\sigma^2 I_n + \\sum_b Z_b G_b Z_b^\\top = \\sigma^2 I_n + \\sum_b Z_b L_b 
 
 For MixedModels.jl models, the internal random-effects factor is stored as a
 relative factor ``\\lambda_b``; we use the scaled factor ``L_b = \\sigma\\,\\lambda_b``.
+
+## Boundary Tolerance
+
+`fa0_tol` controls when a Cholesky element is treated as being on the boundary.
+An element is treated as a boundary parameter when
+
+```math
+|L_{ij}| < \\texttt{fa0_tol}\\,\\sigma \\iff |\\lambda_{ij}| < \\texttt{fa0_tol}.
+```
 
 ## Derivatives of V
 
@@ -134,7 +143,11 @@ be included in the Kenward-Roger bias correction.
 # See Also
 - [`Unstructured`](@ref): Alternative with zero second derivatives
 """
-struct FactorAnalytic <: AbstractParameterization end
+struct FactorAnalytic <: AbstractParameterization
+    fa0_tol::Float64
+end
+
+FactorAnalytic(; fa0_tol::Real=2e-3) = FactorAnalytic(Float64(fa0_tol))
 
 # Adjustment Options
 """

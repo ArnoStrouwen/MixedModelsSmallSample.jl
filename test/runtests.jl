@@ -27,7 +27,13 @@ using SafeTestsets
     @safetestset "categorical" begin
         include("bioequivalence homogeneous.jl")
     end
+    @safetestset "heterogeneous bioequivalence" begin
+        include("bioequivalence heterogeneous.jl")
+    end
     @safetestset "varia" begin
         include("varia.jl")
+    end
+    @safetestset "random slope FA0" begin
+        include("random slope FA0.jl")
     end
 end

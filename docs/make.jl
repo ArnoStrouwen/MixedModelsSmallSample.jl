@@ -7,6 +7,7 @@ DocMeta.setdocmeta!(
 
 makedocs(;
     modules=[MixedModelsSmallSample],
+    checkdocs=:exports,
     authors="Arno Strouwen",
     sitename="MixedModelsSmallSample.jl",
     format=Documenter.HTML(;

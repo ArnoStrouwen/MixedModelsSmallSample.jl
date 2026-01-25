@@ -37,26 +37,26 @@ fm = @formula(
     SS & SS
 )
 m = fit(MixedModel, fm, df; REML=true)
-kr = adjust_KR(m; FIM_σ²=:observed)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ObservedFIM()))
 
 res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results pastry dough jmp.csv")))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-9, rtol=1e-9)
 @test isapprox(res[!, "Std Error"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-9, rtol=1e-8)
-@test isapprox(res[!, "DFDen"], kr.v, atol=1e-10, rtol=1e-7)
+@test isapprox(res[!, "DFDen"], kr.ν, atol=1e-10, rtol=1e-7)
 
 res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results pastry dough sas kr.csv")))
 @test isapprox(res[!, "Estimate"], kr.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sqrt.(diag(kr.varcovar_adjusted)), atol=1e-9, rtol=1e-8)
-@test isapprox(res[!, "DF"], kr.v, atol=1e-10, rtol=1e-7)
+@test isapprox(res[!, "DF"], kr.ν, atol=1e-10, rtol=1e-7)
 
-sw = adjust_SW(m; FIM_σ²=:observed)
+sw = small_sample_adjust(m, Satterthwaite(; fim=ObservedFIM()))
 
 res = DataFrame(CSV.File(joinpath(@__DIR__, "results", "Results pastry dough sas sw.csv")))
 @test isapprox(res[!, "Estimate"], sw.m.β, atol=1e-10, rtol=1e-10)
 @test isapprox(res[!, "StdErr"], sw.m.stderror, atol=1e-9, rtol=1e-8)
-@test isapprox(res[!, "DF"], sw.v, atol=1e-10, rtol=1e-7)
+@test isapprox(res[!, "DF"], sw.ν, atol=1e-10, rtol=1e-7)
 
-kr = adjust_KR(m; FIM_σ²=:expected)
+kr = small_sample_adjust(m, KenwardRoger(; fim=ExpectedFIM()))
 
 res = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results pastry dough lmertest.csv"))
@@ -70,12 +70,12 @@ deleteat!(res, 5:7)
     atol=1e-6,
     rtol=1e-7,
 )
-@test isapprox(res[!, "coefficients.df"], kr.v, atol=1e-7, rtol=1e-7)
+@test isapprox(res[!, "coefficients.df"], kr.ν, atol=1e-7, rtol=1e-7)
 
 sas_asycov_df = DataFrame(
     CSV.File(joinpath(@__DIR__, "results", "Results pastry dough sas asycov.csv"))
 )
-W = MixedModelsSmallSample.vcov_varpar(m; FIM_σ²=:observed)
+W = vcov_varpar(m; fim=ObservedFIM())
 col_intercept = findfirst(c -> c == "CovP2", names(sas_asycov_df))
 col_residual = findfirst(c -> c == "CovP1", names(sas_asycov_df))
 

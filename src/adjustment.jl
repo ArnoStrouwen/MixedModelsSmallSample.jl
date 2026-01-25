@@ -56,7 +56,7 @@ Apply small-sample corrections to a fitted linear mixed model.
 
 This is the main entry point for computing adjusted inference. The function:
 
-1. Validates that `m` was fitted with REML and is unweighted
+ 1. Validates that `m` is unweighted; [`KenwardRoger`](@ref) additionally requires a REML fit
 2. Computes ``W = I(\\theta)^{-1}``, the asymptotic covariance of ``\\hat{\\theta}`` (see [`vcov_varpar`](@ref))
 3. For [`KenwardRoger`](@ref): computes adjusted covariance ``\\Phi_A``
    (see [`compute_adjusted_covariance`](@ref))
@@ -64,7 +64,7 @@ This is the main entry point for computing adjusted inference. The function:
    (see [`compute_dof`](@ref))
 
 # Arguments
-- `m::MixedModel`: A fitted `LinearMixedModel` from MixedModels.jl (must use REML)
+- `m::MixedModel`: A fitted `LinearMixedModel` from MixedModels.jl (must use REML for KR; ML or REML for SW)
 - `method`: Either [`KenwardRoger`](@ref) or [`Satterthwaite`](@ref)
 
 # Returns
@@ -86,13 +86,15 @@ sw = small_sample_adjust(m, Satterthwaite())
 - [`small_sample_ftest`](@ref): Perform F-tests on contrasts
 """
 function small_sample_adjust(m::MixedModel, method::AbstractLinearMixedModelAdjustment)
-    validation(m)
+    validation(m, method)
 
     X = m.X
     Φ = m.vcov
 
     # Get variance decomposition
-    include_d2V = needs_d2V(method)
+    # - KR needs d2V for the covariance correction
+    # - ObservedFIM uses d2V in the observed information when available
+    include_d2V = needs_d2V(method) || (method.fim isa ObservedFIM)
     vd = VarianceDecomposition(m, X, method.parameterization; include_d2V)
 
     # Compute W

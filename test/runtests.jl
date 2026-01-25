@@ -27,6 +27,9 @@ using SafeTestsets
     @safetestset "categorical" begin
         include("bioequivalence homogeneous.jl")
     end
+    @safetestset "categorical ML" begin
+        include("bioequivalence homogeneous ml.jl")
+    end
     @safetestset "heterogeneous bioequivalence" begin
         include("bioequivalence heterogeneous.jl")
     end

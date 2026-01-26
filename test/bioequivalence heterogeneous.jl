@@ -99,7 +99,7 @@ m = fit(
 using MixedModelsSmallSample.LinearAlgebra: LowerTriangular
 
 # Helper to access internal Cholesky elements
-function heterogeneous_decomposition(m, df; fa0_tol=1e-3)
+function heterogeneous_decomposition(m, df; fa0_tol=2e-3)
     n = length(m.y)
 
     # 1. Reuse package logic for Random Effects (FA structure) via Cholesky elements
@@ -133,9 +133,8 @@ function heterogeneous_decomposition(m, df; fa0_tol=1e-3)
 
     # Iterate lower triangular L
     for j in 1:t, i in j:t
-        # Drop logic: matches Intermediate case
-        # We increase tolerance to 1e-3 because SAS appears to drop L(2,2) approx 3e-4
-        if abs(L[i, j]) < fa0_tol
+        # Drop logic: match SAS boundary behavior (scale by residual σ)
+        if abs(L[i, j]) < (fa0_tol * m.sigma)
             continue
         end
 

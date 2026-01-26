@@ -184,7 +184,7 @@ end
 =============================================================================#
 
 """
-    VarianceDecomposition(m::MixedModel, X, ::FactorAnalytic; include_d2V=false, fa0_tol=1e-8)
+    VarianceDecomposition(m::MixedModel, X, p::FactorAnalytic; include_d2V=false)
 
 Compute variance decomposition using the [`FactorAnalytic`](@ref) (Cholesky) parameterization.
 
@@ -220,9 +220,11 @@ which affects the ``R_{ij}`` matrices in the Kenward-Roger bias correction.
 # Arguments
 - `m`: fitted `MixedModel`
 - `X`: design matrix
-- `::FactorAnalytic`: dispatch tag for this parameterization
+- `p::FactorAnalytic`: parameterization settings (including `p.fa0_tol`)
 - `include_d2V`: whether to compute second derivatives (needed for Kenward-Roger)
-- `fa0_tol`: threshold below which Cholesky elements are treated as boundary (skipped)
+
+`p.fa0_tol` is a tolerance on the *relative* Cholesky elements (lambda); an element is
+treated as boundary when `abs(L[i,j]) < p.fa0_tol * m.sigma`.
 
 # Returns
 A [`VarianceDecomposition`](@ref) with `R_factor = -0.25`.
@@ -232,9 +234,9 @@ See also: [`VarianceDecomposition(m, X, ::Unstructured)`](@ref), [`compute_dG_dL
 function VarianceDecomposition(
     m::MixedModel,
     X::Matrix{Float64},
-    ::FactorAnalytic;
+    p::FactorAnalytic;
     include_d2V::Bool=false,
-    fa0_tol::Float64=1e-8,
+    fa0_tol::Float64=p.fa0_tol,
 )
     n = length(m.y)
     chol_blocks = get_cholesky_elements(m)
@@ -259,7 +261,10 @@ function VarianceDecomposition(
         ZsZs_block = [Zs[i] * Zs[j]' for i in 1:t, j in 1:t]
 
         for j in 1:t, i in j:t  # lower triangular
-            abs(L[i, j]) < fa0_tol && continue  # skip boundary parameters
+            # Match SAS behavior: if a Cholesky element is effectively on the boundary,
+            # it does not contribute to the (generalized) inverse information matrix.
+            # We use a tolerance on the *relative* factor (lambda) by scaling with σ.
+            abs(L[i, j]) < (fa0_tol * m.sigma) && continue
 
             dG = compute_dG_dL(LowerTriangular(L), i, j)
             dV = zeros(n, n)

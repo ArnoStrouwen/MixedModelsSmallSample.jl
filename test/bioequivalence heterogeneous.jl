@@ -212,10 +212,8 @@ function heterogeneous_decomposition(m, df; fa0_tol=1e-3)
         return d2G
     end
 
-    d2Vs = Matrix{Matrix{Float64}}(undef, nparams, nparams)
-    for i in 1:nparams, j in 1:nparams
-        d2Vs[i, j] = zeros(n, n)
-    end
+    zero_matrix = zeros(n, n)
+    d2Vs = fill(zero_matrix, nparams, nparams)
 
     # Only iterate FA parameters
     for (idx1, i1, j1) in fa_param_indices, (idx2, i2, j2) in fa_param_indices

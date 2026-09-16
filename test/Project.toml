@@ -9,7 +9,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 Aqua = "0.8.9"
-CSV = "0.10"
+CSV = "0.10, 1"
 DataFrames = "1.5"
 JET = "0.9.12, 0.10, 0.11"
 SafeTestsets = "0.1"

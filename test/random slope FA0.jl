@@ -10,6 +10,9 @@ using MixedModelsSmallSample.LinearAlgebra: diag
 # For a 2-term random effect (intercept + days), FA0(2) is equivalent to full Cholesky
 
 df = DataFrame(MixedModels.dataset(:sleepstudy))
+# MixedModelsDatasets >= 0.2 stores `reaction` as Float32; recover the exact
+# 4-decimal values the reference results (SAS, JMP, lmerTest) were computed from.
+df.reaction = parse.(Float64, string.(df.reaction))
 fm = @formula(reaction ~ 1 + days + (1 + days | subj))
 m = fit(MixedModel, fm, df; REML=true)
 
